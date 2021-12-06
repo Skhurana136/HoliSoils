@@ -3,7 +3,6 @@ import numpy as np
 import h5py
 import os
 
-#from solvers import diff_eqn_system as diffsys
 from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"

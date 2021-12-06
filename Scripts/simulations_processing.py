@@ -9,6 +9,8 @@ from DS.solvers.diff_eqn_system import diversity_carbon
 ## LOAD RESULTS
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 results_dir = os.path.join(project_dir, "simulations")
+output_dir = os.path.join(project_dir, "results")
+
 hw = h5py.File(os.path.join(results_dir,"simulations.h5"), mode = 'r')
 
 # Load all datasets and save their Shannone and diversity indices in a dataframe:
@@ -32,8 +34,13 @@ for sim in list(range(n)):
     sim_series = pd.Series(np.zeros(len(S)+sim))
     dom_series = pd.Series(np.zeros(len(S)+dom_n))
     bio_series = pd.Series(np.zeros(len(S)+bio_n))
-    sim_df = pd.DataFrame ([sim_series, dom_series, bio_series, S_series, DOC_series, TOC_series])
+    sim_df = pd.DataFrame ({"Sim":sim_series, "carbon_species":dom_series, "biomass_species":bio_series,
+    "Shannon":S_series, "DOC":DOC_series, "TOC":TOC_series})
     emptydf = emptydf.append(sim_df, ignore_index=True)
 
 print("The shape of the merged dataframe is ", emptydf.shape)
 print("The dataframe contains the following data types ", emptydf.dtypes)
+
+filename = os.path.join(output_dir, "diversity_data.pkl")
+emptydf.to_pickle(filename)
+print ("Diversity with carbon data is saved here ", filename)
