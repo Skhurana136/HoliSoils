@@ -24,14 +24,14 @@ for sim in list(range(n)):
 
     # Initialize the same number of parameters:
 
-    vparams = np.random.uniform(0.2,10,bio_n*dom_n)
-    kparams = np.random.randint(1000,8000,bio_n*dom_n)
-    yparams = np.random.uniform(0.1,0.99,bio_n)
+    vparams = np.random.normal(6, 2, bio_n*dom_n)#np.random.uniform(0.2,10,bio_n*dom_n)
+    kparams = np.random.normal(600, 200, bio_n*dom_n)#np.random.randint(1000,8000,bio_n*dom_n)
+    yparams = np.random.normal(0.6, 0.1, bio_n)#np.random.uniform(0.1,0.99,bio_n)
     mparams = np.mean(vparams.reshape(dom_n, bio_n),axis=0)/10
 
     # initial conditions
-    dom_initial = np.random.randint(500,1000,dom_n)
-    biomass_initial = np.random.randint(100,1000,bio_n)
+    dom_initial = np.random.normal(600, 20, dom_n)#np.random.randint(500,1000,dom_n)
+    biomass_initial = np.random.normal(100, 20, bio_n)#np.random.randint(100,1000,bio_n)
     x0 = np.append(dom_initial,biomass_initial)
 
     trial = rn(maximum_capacity=5000,
@@ -71,3 +71,4 @@ for sim in list(range(n)):
 
 # Save all results in HDF5 file
 hw.close()
+print ("All results saved in file: ", hw)
