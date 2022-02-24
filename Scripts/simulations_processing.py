@@ -28,7 +28,7 @@ for sim in list(range(n)):
     C = x['dom']
     B = x['biomass']
     data = np.append(C,B,axis=1)
-    S, DOC, TOC = diversity_carbon(data, dom_n, bio_n)
+    S, DOC, TOC = diversity_carbon(data[-2:,:], dom_n, bio_n)
     S_series = pd.Series(S)
     DOC_series = pd.Series(DOC)
     TOC_series =pd.Series(TOC)
@@ -45,7 +45,7 @@ for sim in list(range(n)):
 
     C_norm, B = normalize_carbon(data, dom_n, bio_n, carbon_initial, biomass_initial)
     data_norm = np.append(C_norm[:,None],B,axis=1)
-    S, DOC, TOC = diversity_carbon(data_norm, dom_n, bio_n)
+    S, DOC, TOC = diversity_carbon(data_norm[-2:,:], dom_n, bio_n)
     S_series = pd.Series(S)
     DOC_series = pd.Series(DOC)
     TOC_series =pd.Series(TOC)
