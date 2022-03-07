@@ -10,7 +10,18 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-results_dir = os.path.join(project_dir, "simulations")
+
+details_subfolder = 'carbon_input_50'
+simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
+results_dir = os.path.join(project_dir, "results", details_subfolder)
+figures_dir = os.path.join(project_dir, "figures", details_subfolder)
+
+for sub_dir in [simulations_dir, results_dir, figures_dir]:
+    if os.path.exists(sub_dir)=="True":
+        print("Path exists already")
+        break
+    else:
+        os.mkdir(sub_dir)
 
 hw = h5py.File(os.path.join(results_dir,"simulations.h5"), mode = 'w')
 # Run 1000 random simulations
@@ -34,7 +45,7 @@ for sim in list(range(n)):
     
     x0 = np.append(dom_initial, biomass_initial)
     
-    carbon_input = generate_random_boundary_conditions()
+    carbon_input = generate_random_boundary_conditions(dom_n, 50, method_name = "user_defined")
 
     seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
     'enzyme_production_parameters': enzparams,
