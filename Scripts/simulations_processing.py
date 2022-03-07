@@ -9,9 +9,11 @@ from DS.analyses.steady_state import diversity_carbon, normalize_carbon
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-results_dir = os.path.join(project_dir, "simulations")
-output_dir = os.path.join(project_dir, "results")
-figures_dir = os.path.join(project_dir, "figures")
+details_subfolder = 'carbon_input_50'
+simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
+results_dir = os.path.join(project_dir, "results", details_subfolder)
+figures_dir = os.path.join(project_dir, "figures", details_subfolder)
+
 
 hr = h5py.File(os.path.join(results_dir,"simulations.h5"), mode = 'r')
 
