@@ -23,29 +23,40 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 #%%
 # Assign child directories:
-simulations_dir = os.path.join(project_dir, "simulations")
-results_dir = os.path.join(project_dir, "results")
-figures_dir = os.path.join(project_dir, "figures")
+details_subfolder = 'varied_c_07032022'
+simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
+results_dir = os.path.join(project_dir, "results", details_subfolder)
+figures_dir = os.path.join(project_dir, "figures", details_subfolder)
+
+for sub_dir in [simulations_dir, results_dir, figures_dir]:
+    if os.path.exists(sub_dir)=="True":
+        print("Path exists already")
+        break
+    else:
+        os.mkdir(sub_dir)
+
 
 print ("Project directories set up.")
 
 #%%
 # Initialize the entire system
 # declare a time vector (time window)
-t_span = [0,100]
+t_span = [0,500]
 t = np.arange(t_span[0], t_span [1],0.01)
 
 #%%
 # Number of DOM/Carbon species:
 empty_dic = {}
-for i in list(range(5)):
-    dom_n = np.random.randint(5,50,1)[0]
-    bio_n = np.random.randint(4,50,1)[0]
+for i in list(range(4)):
+    np.random.seed(i)
+    dom_n = np.random.randint(5,20,1)[0]
+    bio_n = np.random.randint(4,20,1)[0]
     print(dom_n, bio_n)
     enzparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5)
     dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n)
     x0 = np.append(dom_initial, biomass_initial)
-    carbon_input = generate_random_boundary_conditions()
+
+    carbon_input = generate_random_boundary_conditions(dom_n, 50, method_name = "user_defined")
 
     seed_dic = {i : {'dom_number': dom_n, 'biomass_number': bio_n,
     'enzyme_production_parameters': enzparams,
@@ -76,7 +87,7 @@ for i in list(range(5)):
     sim_array = solution.y.T
 
     # Shannon diversity
-    #S, DOC, TOC = diversity_carbon(sim_array, dom_n, bio_n)
+    S, DOC, TOC = diversity_carbon(sim_array, dom_n, bio_n)
     
     # Figures
     # Time series of biomass and DOC concentration 
@@ -95,8 +106,7 @@ for i in list(range(5)):
         print(np.shape(puct))#, Shannon)
     #total_C_stock = np.sum(C,axis=1) + np.sum(B, axis=1)
     #C_stock = np.sum(C,axis=1)
-    
-#%%
+
     plt.figure()
     plt.plot (tim,B, linestyle = '--')#, label = "Bacteria")
     plt.plot (tim,C, linestyle = '-')#, label = "Bacteria")
@@ -107,7 +117,7 @@ for i in list(range(5)):
     solid_line = mlines.Line2D([], [], linestyle = '-', color='grey', linewidth=1.5, label='DOM')
     dashed_line = mlines.Line2D([], [], linestyle = '--', color='grey', linewidth=1.5, label='Biomass')
     first_legend = plt.legend(handles=[solid_line, dashed_line])
-    plt.savefig(os.path.join(figures_dir, str(i) + "_Time_series_concentration.png"), dpi = 300, pad = 0.01)
+    plt.savefig(os.path.join(figures_dir, str(i) + "_Time_series_concentration.png"), dpi = 300)
 
     # Time series of biomass and DOC concentration 
     fig, axes = plt.subplots(nrows=3, ncols=1, sharex = True, figsize = (6,8))
@@ -120,7 +130,7 @@ for i in list(range(5)):
     axes.flat[2].set_xlabel("Time")
     axes.flat[0].text(s = "Seed: "+str(i), x = 0.8, y = 0.8, transform = axes.flat[0].transAxes,
     fontsize = 12)
-    plt.savefig(os.path.join(figures_dir, str(i) + "_diversity_concentration.png"), dpi = 300, pad = 0.01)
+    plt.savefig(os.path.join(figures_dir, str(i) + "_diversity_concentration.png"), dpi = 300)
 
 #%%
 index_to_plot = -8000
