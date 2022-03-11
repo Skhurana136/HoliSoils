@@ -146,3 +146,14 @@ diversity_data = pd.read_pickle(filename)
 
 #%%
 plt.scatter(x = 'Shannon',y='DOC', data = diversity_data, s = 'carbon_species')
+
+#%%
+# test calculation of zakem for a short number of doc and microbial populations
+rho_i_j = [[1,2, 3], [3,2, 1], [1,1, 1]]
+y_i_j = [[0.1,0.2, 0.3], [0.3,0.2, 0.1], [0.1,0.1, 0.1]]
+l_j = np.asarray([0.01, 0.02, 0.01]).reshape(-1,1)
+
+#%%
+zakem_q_i_j = np.divide(rho_i_j, l_j)*np.sum(np.multiply(y_i_j,rho_i_j)/rho_i_j) + y_i_j
+#%%
+labile_c = np.flipud(np.argsort(np.max(zakem_q_i_j, axis=0)))

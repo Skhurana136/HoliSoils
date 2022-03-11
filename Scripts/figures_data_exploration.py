@@ -24,7 +24,7 @@ diversity_data = pd.read_pickle(filename)
 sns.scatterplot(x = 'biomass_species', y = 'Shannon', data = diversity_data)
 plt.xlabel ('Biomass_number')
 plt.ylabel("Shannon diversity index")
-plt.savefig(os.path.join(figures_dir, "diversity_shannon.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "biomass_diversity_shannon.png"), dpi = 300)
 
 #%%
 # Is there a relationship between number of biomass species and Shannon?
@@ -51,9 +51,8 @@ plt.legend(ncol = 2)
 plt.savefig(os.path.join(figures_dir, "diversity_conc_steady_state.png"), dpi = 300)
 #%%
 plt.figure()
-sns.scatterplot(x = 'carbon_species',y='biomass_species', data = diversity_data, size = 'DOC',
-hue = 'Shannon')
-plt.xlabel ('DOM_number')
-plt.ylabel("Biomass_number")
+sns.scatterplot(x = 'carbon_biomass',y='DOC', data = diversity_data, size = 'Shannon')
+plt.xlabel ('Carbon x Biomass number')
+plt.ylabel("DOC")
 plt.legend(ncol = 2)
-plt.savefig(os.path.join(figures_dir, "diversity_conc_steady_state_flipped.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "diversity_cxb_conc_steady_state.png"), dpi = 300)
