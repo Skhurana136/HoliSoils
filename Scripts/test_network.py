@@ -22,7 +22,7 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 #%%
 # Assign child directories:
-details_subfolder = 'necromass_ox_state_long'
+details_subfolder = 'necromass_ox_state_long_v2'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
