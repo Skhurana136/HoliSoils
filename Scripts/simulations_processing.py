@@ -4,12 +4,12 @@ import pandas as pd
 import numpy as np
 import h5py
 
-#from DS.analyses.steady_state import diversity_carbon, normalize_carbon
+from DS.analyses.steady_state import diversity_carbon, normalize_carbon
 
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-details_subfolder = 'carbon_input_50_v3'
+details_subfolder = 'from_spyder'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)

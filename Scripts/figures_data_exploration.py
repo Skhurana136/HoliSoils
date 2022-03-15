@@ -12,7 +12,7 @@ import seaborn as sns
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-details_subfolder = 'carbon_input_50_v3'
+details_subfolder = 'mk_module_work_again_v4'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)

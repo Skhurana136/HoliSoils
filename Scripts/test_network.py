@@ -9,7 +9,6 @@ from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 from DS.solvers.diff_eqn_system import generate_random_parameters
 from DS.solvers.diff_eqn_system import generate_random_initial_conditions
 from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
-from DS.analyses.steady_state import diversity_carbon, normalize_carbon
 
 print ("All libraries loaded.")
 
@@ -23,7 +22,7 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 #%%
 # Assign child directories:
-details_subfolder = 'mke_module_work'
+details_subfolder = 'necromass_ox_state_long'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -41,7 +40,7 @@ print ("Project directories set up.")
 #%%
 # Initialize the entire system
 # declare a time vector (time window)
-t_span = [0,500]
+t_span = [0,10000]
 t = np.arange(t_span[0], t_span [1],0.01)
 
 #%%
@@ -51,11 +50,11 @@ for i in list(range(4)):
     dom_n = np.random.randint(5,20,1)[0]
     bio_n = np.random.randint(4,20,1)[0]
     print(dom_n, bio_n)
-    ox_state, enzparams, zparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5)
     dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n, 1000, 80)
+    ox_state, enzparams, zparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5*biomass_initial)
     x0 = np.append(dom_initial, biomass_initial)
 
-    carbon_input = generate_random_boundary_conditions(dom_n, 100, method_name = "user_defined")
+    carbon_input = generate_random_boundary_conditions(dom_n, 10, method_name = "user_defined")
     
     trial = rn(maximum_capacity=5,
             #carbon_mol_bio = 10,
@@ -63,7 +62,7 @@ for i in list(range(4)):
             bio_num = bio_n,
             carbon_input = carbon_input,
             sigmoid_coeff_stolpovsky = 0.01,
-            necromass_distribution="notequal")
+            necromass_distribution="oxidation_state")
     trial.set_rate_constants(ox_state, enzparams, zparams, vparams, kparams, yparams,mparams)
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
     solution = trial.solve_network(x0, t_span, t)
@@ -85,7 +84,7 @@ for i in list(range(4)):
     sim_array = solution.y.T
 
     # Shannon diversity
-    S, DOC, TOC = diversity_carbon(sim_array, dom_n, bio_n)
+    #S, DOC, TOC = diversity_carbon(sim_array, dom_n, bio_n)
     
     # Figures
     # Time series of biomass and DOC concentration 
@@ -118,6 +117,7 @@ for i in list(range(4)):
     first_legend = plt.legend(handles=[solid_line, dashed_line])
     plt.savefig(os.path.join(figures_dir, str(i) + "_Time_series_concentration.png"), dpi = 300)
 
+#%%
     # Time series of biomass and DOC concentration 
     fig, axes = plt.subplots(nrows=3, ncols=1, sharex = True, figsize = (6,8))
     axes.flat[0].plot(tim, S)
