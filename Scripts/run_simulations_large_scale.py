@@ -11,7 +11,7 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 
-details_subfolder = 'carbon_input_50'
+details_subfolder = 'carbon_input_50_v3'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -24,8 +24,8 @@ for sub_dir in [simulations_dir, results_dir, figures_dir]:
         os.mkdir(sub_dir)
 
 hw = h5py.File(os.path.join(results_dir,"simulations.h5"), mode = 'w')
-# Run 1000 random simulations
-n=1000
+# Run 100 random simulations
+n=100
 # declare a time vector (time window)
 t_span = [0,1000]
 t = np.arange(t_span[0], t_span [1],0.01)
@@ -39,37 +39,35 @@ for sim in list(range(n)):
     bio_n = np.random.randint(4,40,1)[0]
 
     # Initialize the same number of parameters and initial conditions:
-    enzparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5)
+    ox_state, enzparams, zparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5)
     
-    dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n)
+    dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n, 1000, 80)
     
     x0 = np.append(dom_initial, biomass_initial)
     
     carbon_input = generate_random_boundary_conditions(dom_n, 50, method_name = "user_defined")
 
-    seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
-    'enzyme_production_parameters': enzparams,
-    'max_rate_parameters': vparams,
-    'sat_const_parameters': kparams,
-    'efficiency_parameters': yparams,
-    'mortality_parameters': mparams,
-    'initial_conditions_dom': dom_initial,
-    'initial_conditions_biomass': biomass_initial,
-    'carbon_input_boundary': carbon_input}}
-
     trial = rn(maximum_capacity=5,
-        #carbon_mol_bio = 10,
         carbon_num = dom_n,
         bio_num = bio_n,
         carbon_input = carbon_input,
-        sigmoid_coeff_stolpovsky = 0.01,
-        enzyme_production_rate_constant = enzparams[0],
-        efficiency_bio_uptake = enzparams[1],
-        necromass_distribution="equal")  
+        necromass_distribution="notequal")  
     
-    trial.set_rate_constants(vparams, kparams, yparams,mparams)
+    trial.set_rate_constants(ox_state, enzparams, zparams, vparams, kparams, yparams,mparams)
     
-    trial.identify_components_natures()
+    trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
+
+    seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
+    'oxidation_state': ox_state,
+    'enzyme_production_parameters': trial.v_enz,
+    'uptake_parameters': trial.z,
+    'max_rate_parameters': trial.v_params,
+    'sat_const_parameters': trial.k_params,
+    'efficiency_parameters': trial.y_params,
+    'mortality_parameters': trial.m_params,
+    'initial_conditions_dom': dom_initial,
+    'initial_conditions_biomass': biomass_initial,
+    'carbon_input_boundary': carbon_input}}
     
     solution = trial.solve_network(x0, t_span, t)
 
@@ -81,14 +79,23 @@ for sim in list(range(n)):
     dataset_name = dataset_category + "/species_number"
     hw.create_dataset(dataset_name, data=[dom_n, bio_n])
     
+    dataset_name = dataset_category + "/parameters/oxidation_state"
+    hw.create_dataset(dataset_name, data=ox_state)
+
+    dataset_name = dataset_category + "/parameters/exo_enzyme_rate"
+    hw.create_dataset(dataset_name, data=trial.v_enz)
+
+    dataset_name = dataset_category + "/parameters/carbon_uptake"
+    hw.create_dataset(dataset_name, data=trial.z)
+
     dataset_name = dataset_category + "/parameters/max_rate"
-    hw.create_dataset(dataset_name, data=vparams.reshape(bio_n, dom_n))
+    hw.create_dataset(dataset_name, data=trial.v_params)
     
     dataset_name = dataset_category + "/parameters/half_saturation"
-    hw.create_dataset(dataset_name, data=kparams.reshape(bio_n, dom_n))
+    hw.create_dataset(dataset_name, data=trial.k_params)
     
     dataset_name = dataset_category + "/parameters/yield_coefficient"
-    hw.create_dataset(dataset_name, data=yparams)
+    hw.create_dataset(dataset_name, data=trial.y_params)
     
     dataset_name = dataset_category + "/initial_conditions/dom"
     hw.create_dataset(dataset_name, data=dom_initial)

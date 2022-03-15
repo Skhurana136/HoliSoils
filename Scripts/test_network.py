@@ -23,7 +23,7 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 #%%
 # Assign child directories:
-details_subfolder = 'varied_c_14032022_changed_lin_mort_v4'
+details_subfolder = 'mke_module_work'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -70,12 +70,12 @@ for i in list(range(4)):
 
     seed_dic = {i : {'dom_number': dom_n, 'biomass_number': bio_n,
     'oxidation_state': ox_state,
-    'enzyme_production_parameters': enzparams,
-    'uptake_parameters': zparams,
-    'max_rate_parameters': vparams,
-    'sat_const_parameters': kparams,
-    'efficiency_parameters': yparams,
-    'mortality_parameters': mparams,
+    'enzyme_production_parameters': trial.v_enz,
+    'uptake_parameters': trial.z,
+    'max_rate_parameters': trial.v_params,
+    'sat_const_parameters': trial.k_params,
+    'efficiency_parameters': trial.y_params,
+    'mortality_parameters': trial.m_params,
     'initial_conditions_dom': dom_initial,
     'initial_conditions_biomass': biomass_initial,
     'carbon_input_boundary': carbon_input}}
@@ -139,41 +139,3 @@ axes.flat[1].scatter(x = S[index_to_plot:], y = TOC[index_to_plot:])
 axes.flat[1].set_xlabel("Shannon diversity")
 axes.flat[0].set_ylabel("DOC")
 axes.flat[1].set_ylabel("TOC")
-#%%
-filename = os.path.join(output_dir, "diversity_data.pkl")
-diversity_data = pd.read_pickle(filename)
-
-#%%
-plt.scatter(x = 'Shannon',y='DOC', data = diversity_data, s = 'carbon_species')
-
-#%%
-# test calculation of zakem for a short number of doc and microbial populations
-rho_i_j = [[1,2, 3], [3,2, 1], [1,1, 1]]
-y_i_j = [[0.1,0.2, 0.3], [0.3,0.2, 0.1], [0.1,0.1, 0.1]]
-l_j = np.asarray([0.01, 0.02, 0.01]).reshape(-1,1)
-
-#%%
-zakem_q_i_j = np.divide(rho_i_j, l_j)*np.sum(np.multiply(y_i_j,rho_i_j)/rho_i_j) + y_i_j
-#%%
-labile_c = np.flipud(np.argsort(np.max(zakem_q_i_j, axis=0)))
-#%%
-dom_n = 3#np.random.randint(5,20,1)[0]
-bio_n = 3#np.random.randint(4,20,1)[0]
-print(dom_n, bio_n)
-ox_state, enzparams, zparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5)
-labile_c = np.argsort(ox_state)
-most_labile_c = labile_c[0]
-least_labile_c = labile_c[-1]
-middle_labile_group = labile_c[1:]
-#%%
-zparams = zparams.reshape(dom_n, bio_n)
-vparams = vparams.reshape(dom_n, bio_n)
-kparams = kparams.reshape(dom_n, bio_n)
-yparams = yparams.reshape(dom_n, bio_n)
-#%%
-print ("Most recalcitrant carbon pool is : ", least_labile_c)
-print ("Most labile carbon pool is : ", most_labile_c)
-z = np.sort(zparams)[:,::-1][:,labile_c] #More labile compounds will be taken up more efficiently from the environment
-vparams = np.sort(vparams)[:,::-1][:,labile_c] #More labile compounds will have faster max rate of consumption
-kparams = np.sort(kparams)[:,labile_c] #More labile compounds will have lower saturation constant
-yparams = np.sort(yparams)[:,::-1][:,labile_c] #Microbes will grow more efficiently on more labile compounds 
