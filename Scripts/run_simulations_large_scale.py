@@ -3,6 +3,8 @@
 import numpy as np
 import h5py
 import os
+import pickle
+import csv
 
 from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 from DS.solvers.diff_eqn_system import generate_random_parameters
@@ -12,7 +14,7 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 
-details_subfolder = 'from_vscode'
+details_subfolder = 'n_1000_160322'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -24,12 +26,15 @@ for sub_dir in [simulations_dir, results_dir, figures_dir]:
     else:
         os.mkdir(sub_dir)
 
-hw = h5py.File(os.path.join(results_dir,"simulations.h5"), mode = 'w')
+hw = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'w')
 # Run 100 random simulations
-n=10
+n=1000
 # declare a time vector (time window)
 t_span = [0,1000]
 t = np.arange(t_span[0], t_span [1],0.01)
+
+empty_dic = {}
+
 for sim in list(range(n)):
     # Set seed
     np.random.seed(sim)
@@ -54,17 +59,19 @@ for sim in list(range(n)):
     
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
 
-    #seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
-    #'oxidation_state': ox_state,
-    #'enzyme_production_parameters': trial.v_enz,
-    #'uptake_parameters': trial.z,
-    #'max_rate_parameters': trial.v_params,
-    #'sat_const_parameters': trial.k_params,
-    #'efficiency_parameters': trial.y_params,
-    #'mortality_parameters': trial.m_params,
-    #'initial_conditions_dom': dom_initial,
-    #'initial_conditions_biomass': biomass_initial,
-    #'carbon_input_boundary': carbon_input}} 
+    seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
+    'oxidation_state': ox_state,
+    'enzyme_production_parameters': trial.v_enz,
+    'uptake_parameters': trial.z,
+    'max_rate_parameters': trial.v_params,
+    'sat_const_parameters': trial.k_params,
+    'efficiency_parameters': trial.y_params,
+    'mortality_parameters': trial.m_params,
+    'initial_conditions_dom': dom_initial,
+    'initial_conditions_biomass': biomass_initial,
+    'carbon_input_boundary': carbon_input}} 
+    empty_dic.update(seed_dic)
+
     solution = trial.solve_network(x0, t_span, t)
 
     tim = solution.t
@@ -109,3 +116,22 @@ for sim in list(range(n)):
 # Save all results in HDF5 file
 hw.close()
 print ("All results saved in file: ", hw)
+
+pickle_file = os.path.join(simulations_dir,"seeds_randoms.pkl")
+# create a binary pickle file 
+f = open(pickle_file,"wb")
+# write the python object (dict) to pickle file
+pickle.dump(empty_dic,f)
+# close file
+f.close()
+print ("All seeds details saved in file: ", pickle_file)
+
+# define a dictionary with key value pairs
+csv_file = os.path.join(simulations_dir,"seeds_randoms.csv")
+# open file for writing, "w" is writing
+w = csv.writer(open(csv_file, "w"))
+# loop over dictionary keys and values
+for key, val in empty_dic.items():
+    # write every key and value to file
+    w.writerow([key, val])
+print ("All seeds details saved in file: ", pickle_file)
