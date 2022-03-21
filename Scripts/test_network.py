@@ -23,7 +23,7 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 #%%
 # Assign child directories:
-details_subfolder = 'necromass_ox_state_long_v2'
+details_subfolder = 'test_initial_val_v7'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -41,17 +41,19 @@ print ("Project directories set up.")
 #%%
 # Initialize the entire system
 # declare a time vector (time window)
-t_span = [0,10000]
+t_span = [0,100]
 t = np.arange(t_span[0], t_span [1],0.01)
 
 #%%
 empty_dic = {}
-for i in list(range(4)):
+for i in list(range(5,8)):
     np.random.seed(i)
     dom_n = np.random.randint(5,20,1)[0]
     bio_n = np.random.randint(4,20,1)[0]
     print(dom_n, bio_n)
     dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n, 1000, 80)
+
+    print(np.sum(dom_initial), np.sum(biomass_initial))
     ox_state, enzparams, zparams, vparams, kparams, yparams, mparams = generate_random_parameters(dom_n, bio_n,5*biomass_initial)
     x0 = np.append(dom_initial, biomass_initial)
 
