@@ -11,7 +11,7 @@ import seaborn as sns
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-details_subfolder = 'large_scale_test_160322'
+details_subfolder = 'paras_adjust_v2'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -21,10 +21,11 @@ diversity_data = pd.read_pickle(filename)
 
 #%%
 # Additional data processing
-diversity_data['DOC_removal'] = (1 - diversity_data.DOC_end/diversity_data.DOC_initial) * 100
-
-#%%
+diversity_data['DOC_removal'] = (1 - diversity_data.DOC_end/diversity_data.DOC_input) * 100
+diversity_data['carbon_biomass'] = diversity_data.carbon_species * diversity_data.biomass_species
 print(diversity_data.shape)
+print(diversity_data.columns)
+
 #%%
 # Does initial diversity impact the removal of DOC?
 sns.scatterplot(x = 'S_initial', y = 'DOC_removal', data = diversity_data)
@@ -70,7 +71,7 @@ plt.savefig(os.path.join(figures_dir, "dom_diversity_shannon.png"), dpi = 300)
 
 #%%
 # Is there a relationship between the combination of number of biomass and carbon species and Shannon?
-diversity_data['carbon_biomass'] = diversity_data.carbon_species * diversity_data.biomass_species
+
 sns.scatterplot(x = 'carbon_biomass', y = 'S_end', data = diversity_data)
 plt.xlabel ('Carbon x Biomass number')
 plt.ylabel("Max Shannon diversity index")

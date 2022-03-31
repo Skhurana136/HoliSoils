@@ -13,7 +13,7 @@ import seaborn as sns
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-details_subfolder = 'n_1000_160322'
+details_subfolder = 'paras_adjust_v2'
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
 figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -22,9 +22,9 @@ hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
 
 # Load all datasets and save their Shannon and diversity indices in a dataframe:
 
-n = len(hr)
+sim_list = list(hr.keys())
 
-for sim in list(range(n)):
+for sim in sim_list:
     sim_data = hr[str(sim)]
     # Identify number of dom and microbial species:
     dom_n, bio_n = sim_data['species_number']
