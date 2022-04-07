@@ -14,7 +14,7 @@ simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
 
-filename = os.path.join(results_dir, "combined_dataset.pkl")
+filename = os.path.join(results_dir, "combined_dataset_20k_days.pkl")
 diversity_data = pd.read_pickle(filename)
 diversity_data['DOC_initial_int'] = round(diversity_data.DOC_initial, -3)
 
@@ -97,6 +97,11 @@ g.add_legend()
 #%%
 g = sns.FacetGrid(diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "t_50_days", alpha = 0.7)
+g.add_legend()
+
+#%%
+g = sns.FacetGrid(diversity_data, col = 'activity', row = 'carbon_species', hue = "DOC_initial_int")
+g.map(sns.scatterplot, "S_initial", "DOC_removal", alpha = 0.7)
 g.add_legend()
 #%%
 # Does initial diversity impact the removal of DOC?

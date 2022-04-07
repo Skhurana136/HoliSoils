@@ -18,9 +18,9 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 seed_sim = 13061989
 #np.random.seed(seed_sim)
 
-details_subfolder = 'carbon_8_ip_0'
-c_n = 8
-bio_n_series = [4,6,8,12,16]#12 didn't work
+details_subfolder = 'carbon_18_ip_1pc'
+c_n = 18
+bio_n_series = [3,6,9,12,15,18,24,30]#6,24,30 didn't work
 
 def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     np.random.seed(seed_sim)
@@ -43,7 +43,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     
     x0 = np.append(dom_initial, biomass_initial)
     
-    carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")
+    carbon_input = generate_random_boundary_conditions(dom_n, (dom_initial/(100*dom_n)), method_name = "user_defined")
 
     trial = rn(maximum_capacity=5,carbon_num = dom_n,bio_num = bio_n, carbon_input = carbon_input, necromass_distribution="notequal")
     

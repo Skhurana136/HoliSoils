@@ -51,6 +51,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     trial.set_rate_constants(ox_state, enzparams, zparams, vparams, kparams, mparams)
     trial.rearrange_constants()
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
+    trial.reorder_constants_with_comp_nature()
     trial.microbe_carbon_switch(Switch_matrix)
     solution = trial.solve_network(x0, t_span, t_span_list)
 

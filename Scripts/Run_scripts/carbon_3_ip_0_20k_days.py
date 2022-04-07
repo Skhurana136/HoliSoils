@@ -18,9 +18,9 @@ project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 seed_sim = 13061989
 #np.random.seed(seed_sim)
 
-details_subfolder = 'carbon_8_ip_0'
-c_n = 8
-bio_n_series = [4,6,8,12,16]#12 didn't work
+details_subfolder = 'carbon_3_ip_0_20k_days'
+c_n = 3
+bio_n_series = [2,3,5,6]
 
 def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     np.random.seed(seed_sim)
@@ -37,20 +37,30 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     dom_n = c_n
     bio_n = b_n
     # Initialize the same number of parameters and initial conditions:
-    dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n, mean_dom_initial, mean_bio_initial, total_dom_initial, dom_bio_ratio_initial)
-    
-    ox_state, enzparams, zparams, vparams, kparams, mparams = generate_random_parameters(dom_n, bio_n,50*np.sum(biomass_initial))
-    
+    initial_conditions_file = os.path.join(project_dir, "simulations",details_subfolder[:-9], "simulations.h5")
+    prev_sim_hfile = h5py.File(initial_conditions_file, mode = 'r')
+    prev_sim_data = prev_sim_hfile[experiment]["bio_n_"+str(b_n)]['dom_initial_'+str(dom_initial)]['seed_'+str(seed_sim)]
+    dom_initial = prev_sim_data['solution']['dom'][-1,:]
+    biomass_initial = prev_sim_data['solution']['biomass'][-1,:]
+    print(np.shape(dom_initial), np.shape(biomass_initial))
+    params = prev_sim_data['parameters']
+    ox_state = params['oxidation_state'][:]
+    enzparams = params['exo_enzyme_rate'][:]
+    zparams = params['carbon_uptake'][:]
+    vparams = params['max_rate'][:]
+    kparams = params['half_saturation'][:]
+    mparams = params['mortality_const'][:]
+    yparams = params['yield_coefficient'][:]
+
     x0 = np.append(dom_initial, biomass_initial)
     
-    carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")
+    carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")#1*total_dom_initial/100
 
     trial = rn(maximum_capacity=5,carbon_num = dom_n,bio_num = bio_n, carbon_input = carbon_input, necromass_distribution="notequal")
     
-    trial.set_rate_constants(ox_state, enzparams, zparams, vparams, kparams, mparams)
-    trial.rearrange_constants()
-    trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
-    trial.reorder_constants_with_comp_nature()
+    trial.set_rate_constants(yparams, ox_state, enzparams, zparams, vparams, kparams, mparams) 
+    trial.constants_previously_defined()
+    trial.identify_components_natures(recalcitrance_criterion='oxidation_state')
     trial.microbe_carbon_switch(Switch_matrix)
     solution = trial.solve_network(x0, t_span, t_span_list)
 
@@ -77,7 +87,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
         
     sim_array = solution.y.T
 
-    dataset_category = sim#dataset_category_1 + "/" + dataset_category_2
+    dataset_category = sim
     
     dataset_name = dataset_category + "/species_number"
     hw.create_dataset(dataset_name, data=[dom_n, bio_n])

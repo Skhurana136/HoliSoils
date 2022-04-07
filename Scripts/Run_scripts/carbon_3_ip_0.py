@@ -43,13 +43,14 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     
     x0 = np.append(dom_initial, biomass_initial)
     
-    carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")#1*total_dom_initial/100
+    carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")
 
     trial = rn(maximum_capacity=5,carbon_num = dom_n,bio_num = bio_n, carbon_input = carbon_input, necromass_distribution="notequal")
     
     trial.set_rate_constants(ox_state, enzparams, zparams, vparams, kparams, mparams)
     trial.rearrange_constants()
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
+    trial.reorder_constants_with_comp_nature()
     trial.microbe_carbon_switch(Switch_matrix)
     solution = trial.solve_network(x0, t_span, t_span_list)
 

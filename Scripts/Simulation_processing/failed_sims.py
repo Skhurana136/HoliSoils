@@ -6,11 +6,12 @@ import pandas as pd
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 #subfolders = ['carbon_3', 'carbon_6','carbon_9','carbon_15']
-subfolders = ['carbon_18']#,'carbon_10','carbon_18']
+subfolders = ['carbon_3', 'carbon_6', 'carbon_8','carbon_15','carbon_18']
+bio_n_series_master = [[2,3,5,6],[3,6,9,12],[4,6,8,16],[3,5,9,12,15,20,30],[3,9,12,15,18]]
 
-for details_subfolder in subfolders:
+for details_subfolder, bio_n_series in zip(subfolders, bio_n_series_master):
     print(details_subfolder)
-    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder+"_ip_0")
+    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder+"_ip_1pc")
     filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
     seed_details = pd.read_pickle(filename)
     row = []
@@ -18,7 +19,7 @@ for details_subfolder in subfolders:
         #print(base)
         for case in ["all"]:
             #print(case)
-            for c_b_r in [3,6,9,12,15,18,24,30]:#[1/3, 1, 3]:
+            for c_b_r in bio_n_series:
                 #print(c_b_r)
                 for dom_init in [1000,5000,10000,15000,20000]:
                     #print(dom_init)
@@ -30,7 +31,7 @@ for details_subfolder in subfolders:
         #print(base)
         for case in ["a", "b", "c", "d", "e"]:
             #print(case)
-            for c_b_r in [3,6,9,12,15,18,24,30]:#[1/3, 1, 3]:
+            for c_b_r in bio_n_series:
                 #print(c_b_r)
                 for dom_init in [1000,5000,10000,15000,20000]:
                     #print(dom_init)

@@ -9,7 +9,7 @@ import numpy as np
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 
 for case in ["carbon_3", "carbon_6", "carbon_8", "carbon_15", "carbon_18"]:
-    details_subfolder = case + '_ip_0'
+    details_subfolder = case + '_ip_1pc'
     simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
     results_dir = os.path.join(project_dir, "results", details_subfolder)
     figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -35,5 +35,5 @@ combined_data['activity'] = combined_data.Sim_series
 for c, a in zip (cases, [100, 10, 10, 10, 10, 10, 30, 30, 30, 30, 30, 50, 50, 50, 50, 50, 70, 70, 70, 70, 70]):        
     combined_data.loc[combined_data['Sim_series']==c, 'activity'] = a
 
-combined_data.to_csv(os.path.join(project_dir, "results", "combined_dataset.csv"))
-combined_data.to_pickle(os.path.join(project_dir, "results", "combined_dataset.pkl"))
+combined_data.to_csv(os.path.join(project_dir, "results", "combined_dataset_20k_days.csv"))
+combined_data.to_pickle(os.path.join(project_dir, "results", "combined_dataset_20k_days.pkl"))
