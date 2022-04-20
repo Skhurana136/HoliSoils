@@ -9,12 +9,15 @@ import matplotlib.pyplot as plt
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 
 subfolders = ['carbon_3', 'carbon_6', 'carbon_8','carbon_15','carbon_18']
-bio_n_series_master = [[2,3,5,6],[3,6,9,12],[4,6,8,16],[3,5,9,12,15,20,30],[3,9,12,15,18]]
+#bio_n_series_master = [[2,3,5,6],[3,6,9,12],[4,6,8,16],[3,5,9,12,15,20,30],[3,9,12,15,18]] m_const:50
+#bio_n_series_master = [[3,5,6],[3,6,9,12],[4,6,8,16],[3,5,9,12,15,20,30],[3,9,12,15,18]] #m_const:25
+bio_n_series_master = [[2,3,5,6],[3,6,9,12],[4,6,8,16],[3,5,9,12,15,20,30],[3,9,12,15,18]] #m_const:10
 
-for details_subfolder, bio_n_series in zip(subfolders, bio_n_series_master):
+for s, bio_n_series in zip(subfolders, bio_n_series_master):
+    details_subfolder = 'm_5_' + s +"_ip_0"
     print(details_subfolder)
-    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder+"_ip_1pc")
-    figures_dir = os.path.join(project_dir, "figures", details_subfolder+"_ip_1pc")
+    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
+    figures_dir = os.path.join(project_dir, "figures", details_subfolder)
     hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
     row = []
     for base in ["b_1"]:

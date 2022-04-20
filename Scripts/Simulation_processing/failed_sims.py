@@ -1,17 +1,18 @@
 ## Import libraries
 import os
+from re import S
 import pandas as pd
 
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-#subfolders = ['carbon_3', 'carbon_6','carbon_9','carbon_15']
 subfolders = ['carbon_3', 'carbon_6', 'carbon_8','carbon_15','carbon_18']
 bio_n_series_master = [[2,3,5,6],[3,6,9,12],[4,6,8,16],[3,5,9,12,15,20,30],[3,9,12,15,18]]
 
-for details_subfolder, bio_n_series in zip(subfolders, bio_n_series_master):
+for s, bio_n_series in zip(subfolders, bio_n_series_master):
+    details_subfolder = "m_5_"+s + "_ip_0"
     print(details_subfolder)
-    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder+"_ip_1pc")
+    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
     filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
     seed_details = pd.read_pickle(filename)
     row = []

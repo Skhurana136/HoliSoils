@@ -12,7 +12,7 @@ import seaborn as sns
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-details_subfolder = 'carbon_15'+'_ip_0_20k_days'
+details_subfolder = 'm_5_carbon_15'+'_ip_0'
 
 simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
 results_dir = os.path.join(project_dir, "results", details_subfolder)
@@ -98,7 +98,7 @@ for b_n in bio_n_series:
             #Total input of DOC
             doc_input_i = DOC_i + doc_input
             #Time taken for DOC to be 50% of initial DOC
-            t50_arr = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==0.63)
+            t50_arr = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==0.80)
             if t50_arr.size > 0:
                 t50 = t50_arr[0][0]
             t50_b1 = t50
@@ -153,7 +153,7 @@ for b_n in bio_n_series:
                     #Total input of DOC
                     doc_input_i = DOC_i + doc_input
                     #Time taken for DOC to be 50% of initial DOC
-                    t50_arr = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==0.63)
+                    t50_arr = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==0.80)
                     if t50_arr.size > 0:
                         t50 = t50_arr[0][0]
                     #DOC at t50 of B1

@@ -7,9 +7,9 @@ import numpy as np
 ## LOAD RESULTS
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
-
-for case in ["carbon_3", "carbon_6", "carbon_8", "carbon_15", "carbon_18"]:
-    details_subfolder = case + '_ip_1pc'
+#"carbon_3", 
+for case in ["carbon_6", "carbon_8", "carbon_15", "carbon_18"]:
+    details_subfolder = "m_5_" + case + '_ip_0'
     simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
     results_dir = os.path.join(project_dir, "results", details_subfolder)
     figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -23,7 +23,7 @@ for case in ["carbon_3", "carbon_6", "carbon_8", "carbon_15", "carbon_18"]:
     diversity_data['t_50_ratio'] = diversity_data.T_50/diversity_data.T_50_B1
     print(diversity_data.shape)
     print(diversity_data.columns)
-    if case == "carbon_3":
+    if case == "carbon_6":
         combined_data = diversity_data
     else:
         combined_data = pd.concat([combined_data, diversity_data]).reindex()
@@ -35,5 +35,5 @@ combined_data['activity'] = combined_data.Sim_series
 for c, a in zip (cases, [100, 10, 10, 10, 10, 10, 30, 30, 30, 30, 30, 50, 50, 50, 50, 50, 70, 70, 70, 70, 70]):        
     combined_data.loc[combined_data['Sim_series']==c, 'activity'] = a
 
-combined_data.to_csv(os.path.join(project_dir, "results", "combined_dataset_20k_days.csv"))
-combined_data.to_pickle(os.path.join(project_dir, "results", "combined_dataset_20k_days.pkl"))
+combined_data.to_csv(os.path.join(project_dir, "results", "combined_dataset_m_5.csv"))
+combined_data.to_pickle(os.path.join(project_dir, "results", "combined_dataset_m_5.pkl"))

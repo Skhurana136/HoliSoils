@@ -2,7 +2,6 @@
 ## Import libraries
 import os
 import pandas as pd
-import numpy as np
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -14,10 +13,10 @@ simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
 
-filename = os.path.join(results_dir, "combined_dataset_20k_days.pkl")
+filename = os.path.join(results_dir, "combined_dataset_420.pkl")#25.pkl")#_20k_days.pkl")
 diversity_data = pd.read_pickle(filename)
 diversity_data['DOC_initial_int'] = round(diversity_data.DOC_initial, -3)
-
+diversity_data['ratio_t_50'] = diversity_data.T_50/diversity_data.T_50_B1
 #%%
 # Distribution of number of carbon compounds and biomass species that we tested.
 sns.kdeplot(x = "carbon_species", data = diversity_data, label = "#carbon")
@@ -26,6 +25,9 @@ plt.legend()
 
 #%%
 sns.kdeplot(x = "DOC_removal", data = diversity_data)
+
+#%%
+sns.kdeplot(x = "T_50", data = diversity_data, hue = "carbon_species")
 #%%
 sns.kdeplot(x = "S_initial", data = diversity_data, label = "Initial S")
 sns.kdeplot(x = "S_max", data = diversity_data, label = "Max S")
@@ -74,38 +76,24 @@ plt.xlabel("Biomass: initial/max")
 diversity_data['ratio_biomass_i_end'] = diversity_data.Biomass_initial/diversity_data.Biomass_end
 plt.hist('ratio_biomass_i_end', data = diversity_data, label = "S_end")
 plt.xlabel("Biomass: initial/final")
-#%%
-diversity_data['DOC_norm_cnum'] = diversity_data.DOC_initial/diversity_data.carbon_species
-sns.scatterplot(x = "DOC_norm_cnum", y = "DOC_removal", hue = "biomass_species", size = "Biomass_max", data = diversity_data)#, legend = False)
-plt.xscale("log")
-#%%
-diversity_data['ratio_t_50'] = diversity_data.T_50/diversity_data.T_50_B1
-diversity_data['DOC_norm_cnum_shannon'] = diversity_data.DOC_norm_cnum*diversity_data.S_initial
-sns.scatterplot(x = "DOC_norm_cnum_shannon", y = "ratio_t_50",data = diversity_data)
-#, hue = "S_initial", alpha = 0.5, size = "biomass_species", data = diversity_data)#, legend = False)
-plt.ylabel("Ratio_t50_baseline")
-#plt.xscale("log")
+
 #%%
 g = sns.FacetGrid(diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "DOC_removal", alpha = 0.7)
 g.add_legend()
+plt.savefig(os.path.join(figures_dir, "DOC_removal_S_i_420.png"), dpi = 300)
 
 #%%
 g = sns.FacetGrid(diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
-g.map(sns.scatterplot, "S_initial", "t_50_ratio", alpha = 0.7)
+g.map(sns.scatterplot, "S_initial", "ratio_t_50", alpha = 0.7)
 g.add_legend()
+plt.savefig(os.path.join(figures_dir, "t_50_ratio_S_i_420.png"), dpi = 300)
 #%%
 g = sns.FacetGrid(diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "t_50_days", alpha = 0.7)
 g.add_legend()
-
+plt.savefig(os.path.join(figures_dir, "t_50_days_S_i_420.png"), dpi = 300)
 #%%
 g = sns.FacetGrid(diversity_data, col = 'activity', row = 'carbon_species', hue = "DOC_initial_int")
 g.map(sns.scatterplot, "S_initial", "DOC_removal", alpha = 0.7)
 g.add_legend()
-#%%
-# Does initial diversity impact the removal of DOC?
-sns.scatterplot(x = "carbon_species", y = 'DOC_removal', size = "S_initial", data = diversity_data)
-plt.xlabel ('carbon_doc_removal')
-plt.ylabel("DOC removal (%)")
-plt.savefig(os.path.join(figures_dir, "S_i_DOC_norm.png"), dpi = 300)
