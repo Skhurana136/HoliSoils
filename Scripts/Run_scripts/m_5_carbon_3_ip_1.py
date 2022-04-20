@@ -15,12 +15,12 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 
-seed_sim = 420#13012022#13061989
+seed_sim = 13061989
 #np.random.seed(seed_sim)
 
-details_subfolder = 'carbon_6_seed' + str(seed_sim)+'_ip_0'
-c_n = 6
-bio_n_series = [3,6,9,12]
+details_subfolder = 'm_5_carbon_3_ip_1'
+c_n = 3
+bio_n_series = [2,3,5,6]
 
 def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     np.random.seed(seed_sim)
@@ -44,7 +44,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     
     x0 = np.append(dom_initial, biomass_initial)
     
-    carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")
+    carbon_input = generate_random_boundary_conditions(dom_n, dom_initial*t_step/(365*dom_n), method_name = "user_defined")
 
     trial = rn(maximum_capacity=5,carbon_num = dom_n,bio_num = bio_n, carbon_input = carbon_input, necromass_distribution="notequal")
     

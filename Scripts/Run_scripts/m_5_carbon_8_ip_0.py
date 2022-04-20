@@ -15,10 +15,10 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 #project_dir = "C:/Users/swami/Documents/Projects/HoliSoils/data"
 project_dir = "C:/Users/swkh9804/Documents/Projects/HoliSoils/data"
 
-seed_sim = 13061989
+seed_sim = 420#13012022#13061989
 #np.random.seed(seed_sim)
 
-details_subfolder = 'm_5_carbon_8_ip_0'
+details_subfolder = 'carbon_8_seed_' + str(seed_sim)+'_ip_0'
 c_n = 8
 bio_n_series = [4,6,8,12,16]#12 didn't work
 
@@ -27,8 +27,9 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     sim = experiment + "/bio_n_"+ str(N) + "/dom_initial_" + str(dom_initial) + "/seed_" + str(seed_sim)
 
     # declare a time vector (time window)
-    t_span = [0,20000]
-    t_span_list = np.arange(t_span[0], t_span [1],0.1)
+    t_span = [0,50000]
+    t_step = 0.1
+    t_span_list = np.arange(t_span[0], t_span [1],t_step)
     total_dom_initial = dom_initial
     dom_bio_ratio_initial = 10
     mean_dom_initial = 1000
@@ -75,7 +76,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
         status = {'sim_status' : 'complete'}
         seed_dic[sim].update(status)
         
-    sim_array = solution.y.T
+    sim_array = solution.y.T.copy()[::int(5/t_step)]
 
     dataset_category = sim#dataset_category_1 + "/" + dataset_category_2
     
