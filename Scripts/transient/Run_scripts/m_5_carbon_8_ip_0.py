@@ -14,7 +14,7 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 
-seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994]#[420,13012022,13061989]
+seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
 c_n = 8
 bio_n_series = [4,6,8,12,16]
@@ -68,12 +68,8 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
 
     tim = solution.t
     
-    if tim.size<len(t_span_list):
-        status = {'sim_status' : 'failed'}
-        seed_dic[sim].update(status)
-    else:
-        status = {'sim_status' : 'complete'}
-        seed_dic[sim].update(status)
+    seed_dic[sim]['sim_status']=solution.status
+    seed_dic[sim]['message'] = solution.message
         
     sim_array = solution.y.T.copy()[::int(5/t_step)]
 
@@ -114,6 +110,9 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     
     dataset_name = dataset_category + "/solution/biomass"
     hw.create_dataset(dataset_name, data=sim_array[:,dom_n:])
+
+    dataset_name = dataset_category + "/solution/status"
+    hw.create_dataset(dataset_name, data = solution.status)
     
     return sim, seed_dic
 

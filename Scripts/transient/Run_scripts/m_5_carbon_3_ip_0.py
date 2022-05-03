@@ -14,7 +14,7 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 
-seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994]#[420,13012022,13061989]
+seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
 c_n = 3
 bio_n_series = [2,3,5,6]
@@ -26,8 +26,8 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     sim = experiment + "/bio_n_"+ str(b_n) + "/dom_initial_" + str(dom_initial) + "/seed_" + str(seed_sim)
 
     # declare a time vector (time window)
-    t_span = [0,50000]
-    t_step = 0.1
+    t_span = [0,5000]
+    t_step = 5
     t_span_list = np.arange(t_span[0], t_span [1],t_step)
     total_dom_initial = dom_initial
     dom_bio_ratio_initial = 10
@@ -52,7 +52,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
     trial.reorder_constants_with_comp_nature()
     trial.microbe_carbon_switch(Switch_matrix)
-    solution = trial.solve_network(x0, t_span, t_span_list)
+    solution = trial.solve_network(x0, t_span, t_span_list, solv_method = 'Radau', first_tim_step = 0.001, max_tim_step = 0.5)
 
     seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
     'oxidation_state': ox_state,
@@ -64,20 +64,13 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     'mortality_parameters': trial.m_params,
     'initial_conditions_dom': dom_initial,
     'initial_conditions_biomass': biomass_initial,
-    'carbon_input_boundary': carbon_input}}
-
-    tim = solution.t
-    
-    if tim.size<len(t_span_list):
-        status = {'sim_status' : 'failed'}
-        seed_dic[sim].update(status)
-    else:
-        status = {'sim_status' : 'complete'}
-        seed_dic[sim].update(status)
+    'carbon_input_boundary': carbon_input,
+    'sim_status':solution.status,
+    'message': solution.message}}
         
-    sim_array = solution.y.T.copy()[::int(5/t_step)]
+    sim_array = solution.y.T#.copy()[::int(5/t_step)]
 
-    dataset_category = sim#dataset_category_1 + "/" + dataset_category_2
+    dataset_category = sim
     
     dataset_name = dataset_category + "/species_number"
     hw.create_dataset(dataset_name, data=[dom_n, bio_n])
@@ -115,6 +108,9 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     dataset_name = dataset_category + "/solution/biomass"
     hw.create_dataset(dataset_name, data=sim_array[:,dom_n:])
     
+    dataset_name = dataset_category + "/solution/status"
+    hw.create_dataset(dataset_name, data = solution.status)
+
     return sim, seed_dic
 
 def run_sim (random_seed_number):
@@ -142,7 +138,7 @@ def run_sim (random_seed_number):
         for t_dom_initial in init_dom_list:
                 exp_details = baseline + "_" + label + "_"
                 sim_id, seed_dictionary = run_sims (exp_details, c_n, N, t_dom_initial, random_seed_number, S_witch_b_1, hfile_to_write)
-                if seed_dictionary[sim_id]["sim_status"] == "failed":
+                if seed_dictionary[sim_id]["sim_status"] < 0:
                     failed_count +=1
                 empty_dic.update(seed_dictionary)
 
@@ -164,7 +160,7 @@ def run_sim (random_seed_number):
                 for t_dom_initial in init_dom_list:
                     exp_details = baseline + "_" + label + "_"
                     sim_id, seed_dictionary = run_sims (exp_details, c_n, N, t_dom_initial, random_seed_number, x_s_witch, hfile_to_write)
-                    if seed_dictionary[sim_id]["sim_status"] == "failed":
+                    if seed_dictionary[sim_id]["sim_status"] < 0:
                         failed_count +=1
                     empty_dic.update(seed_dictionary)
 
@@ -194,6 +190,6 @@ def run_sim (random_seed_number):
 
     return None
 
-for seed_sim in seed_sim_list:
+for seed_sim in seed_sim_list[5:6]:
     run_sim (seed_sim)
     print ("Completed simulations for seed ", seed_sim)

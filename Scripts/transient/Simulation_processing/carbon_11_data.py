@@ -5,20 +5,19 @@ import numpy as np
 
 import h5py 
 
+
 ## LOAD RESULTS
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 results_dir = os.path.join(project_dir, "results")
 
-seed_sim_list = seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994,420,13012022,13061989]
+seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994,420,13012022,13061989]
 
-c_n = 6
-loss_crit = 0.63
-bio_n_series = [3,6,9,12]
+c_n = 11
+bio_n_series = [3,6,9,12,15,18,24,30]
 ip = 0
 input_factor = ip*5/365
+loss_crit = 0.63
 row = []
-failed_sim = []
-complete_sim = []
 init_dom_list = [1000,2000,5000,10000,15000]
 time_span = 10000
 results_filename = os.path.join(results_dir, 'carbon_' + str(c_n) + "_ip_"+str(ip)+"_diversity_data.pkl")
@@ -166,7 +165,7 @@ for seed_sim in seed_sim_list:
                         row.append([seed_sim,sim, dom_n, bio_n, DOC_i, doc_input_i, DOC_end, t50, t50_b1, DOC_t50_b1, S_i, S_end, S_max, S_t50, S_t50_b1, bio_i, bio_end, B_max, B_t50, B_t50_b1, sim_status])
     hr.close()
 
-diversity_data = pd.DataFrame.from_records(row, columns = ["Seed","Sim_series", "carbon_species", "biomass_species", "DOC_initial", "DOC_input", "DOC_end", "T_50", "T_50_B1", "DOC_T50_B1","S_initial", "S_end", "S_max", "S_t_50", "S_t_50_b1", "Biomass_initial", "Biomass_end", "Biomass_max","Biomass_t_50", "Biomass_t_50_b1", "Status"])
+diversity_data = pd.DataFrame.from_records(row, columns = ["Seed", "Sim_series", "carbon_species", "biomass_species", "DOC_initial", "DOC_input", "DOC_end", "T_50", "T_50_B1", "DOC_T50_B1","S_initial", "S_end", "S_max", "S_t_50", "S_t_50_b1", "Biomass_initial", "Biomass_end", "Biomass_max","Biomass_t_50", "Biomass_t_50_b1", "Status"])
 
 print("The shape of the dataframe is ", diversity_data.shape)
 print("The dataframe contains the following data types ", diversity_data.dtypes)
