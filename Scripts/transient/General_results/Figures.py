@@ -7,16 +7,42 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 ## LOAD RESULTS
+## LOAD RESULTS
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
 
-filename = os.path.join(results_dir, "1c_adaptation_combined_dataset.pkl")
-diversity_data = pd.read_pickle(filename)
-diversity_data = diversity_data.drop_duplicates()
-diversity_data['DOC_initial_int'] = round(diversity_data.DOC_initial, -3)
-diversity_data['ratio_t_50'] = diversity_data.T_50/diversity_data.T_50_B1
+null_prefixes = ["expo_", "gamma_", "1c_", ""]
+adapt_prefixes = ["expo_", "gamma_", "1c_", "gen_"]
+
+null_files = []
+adapt_files = []
+for p,a in zip(null_prefixes, adapt_prefixes):
+    filename = os.path.join(results_dir, p + "null_combined_dataset.pkl")
+    n_data = pd.read_pickle(filename)
+    null_files.append(n_data)
+    filename = os.path.join(results_dir, a + "adaptation_combined_dataset.pkl")
+    a_data = pd.read_pickle(filename)
+    adapt_files.append(a_data)
+
+null_data = pd.concat(null_files)
+adapt_data = pd.concat(adapt_files)
+
+null_data = null_data.drop_duplicates()
+null_data['DOC_initial_int'] = round(null_data.DOC_initial, -3)
+null_data['S_initial_int'] = round(null_data.S_initial, 1)
+null_data['ratio_t_50'] = null_data.T_50/null_data.T_50_B1
+adapt_data = adapt_data.drop_duplicates()
+adapt_data['DOC_initial_int'] = round(adapt_data.DOC_initial, -3)
+adapt_data['S_initial_int'] = round(adapt_data.S_initial, 1)
+adapt_data['ratio_t_50'] = adapt_data.T_50/adapt_data.T_50_B1
+
+a_n_data = [null_data, adapt_data]
+all_data = pd.concat(a_n_data)
+
+#%%
+diversity_data = adapt_data
 #%%
 # Distribution of number of carbon compounds and biomass species that we tested.
 sns.kdeplot(x = "carbon_species", data = diversity_data, label = "#carbon")
@@ -44,7 +70,7 @@ sns.kdeplot(x = "T_50", data = diversity_data, hue = "carbon_species")
 plt.xscale("log")
 plt.xlabel("Time for 37% loss (days)")
 plt.tight_layout()
-plt.savefig(os.path.join(figures_dir, "1c_adaptation_t_63_distribution.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "adapt_t_63_distribution.png"), dpi = 300)
 #%%
 sns.kdeplot(x = "S_initial", data = diversity_data, label = "Initial S")
 sns.kdeplot(x = "S_max", data = diversity_data, label = "Max S")
@@ -77,43 +103,27 @@ plt.xlabel("Biomass: initial/max")
 diversity_data['ratio_biomass_i_end'] = diversity_data.Biomass_initial/diversity_data.Biomass_end
 plt.hist('ratio_biomass_i_end', data = diversity_data, label = "S_end")
 plt.xlabel("Biomass: initial/final")
-#%%
-# Filter out all failed simulations:
-compl = diversity_data[diversity_data.Status>=0]
+
 #%%
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species",sharey="row", sharex=True)
 g.map(sns.scatterplot, "S_initial", "DOC_removal", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_adaptation_DOC_removal_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "adapt_DOC_removal_S_i_compl.png"), dpi = 300)
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "DOC_removal_mid", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_adaptation_DOC_removal_mid_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "adapt_DOC_removal_mid_S_i_compl.png"), dpi = 300)
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "ratio_t_50", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_adaptation_t_50_ratio_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "adapt_t_50_ratio_S_i_compl.png"), dpi = 300)
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "t_50_days", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_adaptation_t_50_days_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "adapt_t_50_days_S_i_compl.png"), dpi = 300)
 
 #%%
-import numpy as np
-from DS.solvers.diff_eqn_system import generate_random_parameters
-dom_n = 3
-bio_n = 2
-biomass_initial = 100
-total_dom_initial = 1000
-ox_state, enzparams, zparams, vparams, kparams, mparams = generate_random_parameters(dom_n, bio_n,5*np.sum(biomass_initial))
-#%%
-dom_initial = np.ones(dom_n)
-dom_initial[np.argmin(ox_state)] = total_dom_initial - dom_n + 1
-vparams_s = vparams.reshape(dom_n, bio_n)
-#%% 
-scaling_vector = dom_initial.reshape(-1,1)
-v_params = vparams_s * (scaling_vector/np.mean(scaling_vector))
-#%%
-dom_initial_expo = np.random.default_rng().standard_exponential(dom_n) + total_dom_initial/10
-scaling_vector = dom_initial_expo.reshape(-1,1)
-v_params_expo = vparams_s * (scaling_vector/np.mean(scaling_vector))
+g = sns.FacetGrid(data = diversity_data, col = 'S_initial_int', row = 'DOC_initial_int', hue = "carbon_species",sharey="row", sharex=True)
+g.map(sns.scatterplot, "activity", "ratio_t_50", alpha = 0.7)
+g.add_legend()
+plt.savefig(os.path.join(figures_dir, "adapt_ratio_t_50_act_compl.png"), dpi = 300)

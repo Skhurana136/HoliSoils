@@ -10,60 +10,83 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 ## LOAD RESULTS
+
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
 
-filename = os.path.join(results_dir, "adaptation_cont_combined_dataset.pkl")
-diversity_data = pd.read_pickle(filename)
-diversity_data = diversity_data.drop_duplicates()
-diversity_data['DOC_initial_int'] = round(diversity_data.DOC_initial, -3)
-diversity_data['ratio_t_50'] = diversity_data.T_50/diversity_data.T_50_B1
-diversity_data['S_initial_int'] = round(diversity_data.S_initial, 1)
-compl = diversity_data.dropna(subset = ['ratio_t_50'])
+null_prefixes = ["expo_", "gamma_", "1c_", ""]
+adapt_prefixes = ["expo_", "gamma_", "1c_", "gen_"]
+
+null_files = []
+adapt_files = []
+for p,a in zip(null_prefixes, adapt_prefixes):
+    filename = os.path.join(results_dir, p + "null_combined_dataset.pkl")
+    n_data = pd.read_pickle(filename)
+    null_files.append(n_data)
+    filename = os.path.join(results_dir, a + "adaptation_combined_dataset.pkl")
+    a_data = pd.read_pickle(filename)
+    adapt_files.append(a_data)
+
+null_data = pd.concat(null_files)
+adapt_data = pd.concat(adapt_files)
+
+null_data = null_data.drop_duplicates()
+null_data['DOC_initial_int'] = round(null_data.DOC_initial, -3)
+null_data['S_initial_int'] = round(null_data.S_initial, 1)
+null_data['ratio_t_50'] = null_data.T_50/null_data.T_50_B1
+
+adapt_data = adapt_data.drop_duplicates()
+adapt_data['DOC_initial_int'] = round(adapt_data.DOC_initial, -3)
+adapt_data['S_initial_int'] = round(adapt_data.S_initial, 1)
+adapt_data['ratio_t_50'] = adapt_data.T_50/adapt_data.T_50_B1
+
+a_n_data = [null_data, adapt_data]
+all_data = pd.concat(a_n_data)
+
+#%%
+compl = adapt_data.dropna(subset = ['ratio_t_50'])
 init_doc_list = list(compl.DOC_initial_int.unique())
 activity_list = list(compl.activity.unique())
 s_initial_list = list(compl.S_initial_int.unique())
 
 #%%
-dom = np.
-#%%
 gammares = []
-for doci in init_doc_list:
-    for act in activity_list:
-        sub = compl[(compl['DOC_initial_int']==doci) & (compl['activity']==act)].sort_values(by=['S_initial'])
-        #for c_n in [3,6,12,18]:
-        #    X = sub[sub.carbon_species == c_n]['S_initial'].to_numpy(dtype = float)
-        #    y = sub[sub.carbon_species == c_n]['ratio_t_50'].to_numpy(dtype = float)
-        X = sub['S_initial'].to_numpy(dtype = float)
-        y = sub['ratio_t_50'].to_numpy(dtype = float)
-        b = sub["Biomass_initial"].to_numpy(dtype = float)[0]
+#for doci in init_doc_list:
+for act in activity_list:
+    sub = compl[(compl['activity']==act)].sort_values(by=['S_initial']) #(compl['DOC_initial_int']==doci) & 
+    #for c_n in [3,6,12,18]:
+    #    X = sub[sub.carbon_species == c_n]['S_initial'].to_numpy(dtype = float)
+    #    y = sub[sub.carbon_species == c_n]['ratio_t_50'].to_numpy(dtype = float)
+    X = sub['S_initial'].to_numpy(dtype = float)
+    y = sub['ratio_t_50'].to_numpy(dtype = float)
+    b = sub["Biomass_initial"].to_numpy(dtype = float)[0]
 
-        if y.size>0:
-            popt_gamma, pcov_e = curve_fit(gamma.pdf, xdata=X, ydata=y, p0=[0.5,1.4])
-        else:
-            popt_gamma = [np.nan, np.nan, np.nan]
-        gammares.append([doci, act, b, popt_gamma[0], popt_gamma[1]])
+    if y.size>0:
+        popt_gamma, pcov_e = curve_fit(gamma.pdf, xdata=X, ydata=y, p0=[0.05,1.0])
+    else:
+        popt_gamma = [np.nan, np.nan, np.nan]
+    gammares.append([act, b, popt_gamma[0], popt_gamma[1]])
 
-gammaresdf = pd.DataFrame.from_records(gammares, columns = ["DOC_initial", "activity", "Biomass_initial", "a", "b"])
+gammaresdf = pd.DataFrame.from_records(gammares, columns = ["activity", "Biomass_initial", "a", "b"])#"DOC_initial", 
 
 # Check how the plot looks like against the data points for specific cases
 resdf = gammaresdf
-for doci in init_doc_list:
-    for act in activity_list[1:]:
-        #for c_n in [3,6,12,18]:
-        sub = diversity_data[(diversity_data['DOC_initial_int']==doci) & (diversity_data['activity']==act)].sort_values(by=["S_initial"]) #& (diversity_data['carbon_species'] == c_n)
-        X = sub['S_initial'].to_numpy(dtype = float)
-        y = sub['ratio_t_50'].to_numpy(dtype = float)
-        b = sub["Biomass_initial"].to_numpy(dtype = float)[0]
-        ressub = resdf[(resdf['DOC_initial']==doci) & (resdf['activity']==act)].reset_index()
-        ypred = gamma.pdf(X, ressub.a[0], loc = ressub.b[0])#, scale  = 1)
-        plt.figure()
-        plt.title(str(doci) + " " + str(act))# +  " " + str(c_n))
-        plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'gamma')
-        plt.scatter(X,y, marker = '.', label = "data")
-        plt.legend()
+#for doci in init_doc_list:
+for act in activity_list[1:]:
+    #for c_n in [3,6,12,18]:
+    sub = compl[(compl['activity']==act)].sort_values(by=["S_initial"]) #'DOC_initial_int']==doci) &#& (diversity_data['carbon_species'] == c_n)
+    X = sub['S_initial'].to_numpy(dtype = float)
+    y = sub['ratio_t_50'].to_numpy(dtype = float)
+    b = sub["Biomass_initial"].to_numpy(dtype = float)[0]
+    ressub = resdf[(resdf['activity']==act)].reset_index() #(resdf['DOC_initial']==doci) & 
+    ypred = gamma.pdf(X, ressub.a[0], loc = ressub.b[0])#, scale  = 1)
+    plt.figure()
+    plt.title(str(act))# +  " " + str(c_n)) str(doci) + " " + 
+    plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'gamma')
+    plt.scatter(X,y, marker = '.', label = "data")
+    plt.legend()
 
 #%%
 x = np.linspace(1.4,4,999)
