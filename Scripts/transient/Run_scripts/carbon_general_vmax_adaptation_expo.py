@@ -1,11 +1,11 @@
 # ## Import libraries
-from random import seed
 import numpy as np
 import h5py
 import os
 import pickle
 import csv
 import math
+from scipy.stats import skewnorm
 
 from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 from DS.solvers.diff_eqn_system import generate_random_parameters
@@ -16,9 +16,9 @@ project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
-cn_list = [3,6,12]
-bio_n_series = [4,8,16,32]
-ip = 1 #1 random scenario
+cn_list = [3,6,12,18]
+bio_n_series = [4,8,12,16,20,24,28,32]
+ip = 0 #0 random scenarios
 init_dom_list = [1000,2000,5000,10000,15000]
 
 def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
@@ -26,7 +26,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     sim = experiment + "/bio_n_"+ str(b_n) + "/dom_initial_" + str(dom_initial) + "/seed_" + str(seed_sim)
 
     # declare a time vector (time window)
-    t_span = [0,20000]
+    t_span = [0,36500]
     t_step = 5
     t_span_list = np.arange(t_span[0], t_span [1],t_step)
     total_dom_initial = dom_initial
@@ -36,13 +36,18 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
 
     dom_n = c_n
     bio_n = b_n
+    
     # Initialize the same number of parameters and initial conditions:
-    dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n, mean_dom_initial, mean_bio_initial, total_dom_initial, dom_bio_ratio_initial)
+    dom_expo = np.random.default_rng().standard_exponential(dom_n) + mean_dom_initial
+    bio_expo = np.random.default_rng().standard_exponential(bio_n) + mean_dom_initial/dom_bio_ratio_initial
+    dom_initial = total_dom_initial*dom_expo/np.sum(dom_expo)
+    biomass_initial = total_dom_initial*bio_expo/(dom_bio_ratio_initial*np.sum(bio_expo))
     
     ox_state, enzparams, zparams, vparams, kparams, mparams = generate_random_parameters(dom_n, bio_n,5*np.sum(biomass_initial))
-    
     x0 = np.append(dom_initial, biomass_initial)
-    
+    rel_tol_arr = 10**(math.floor(math.log10(np.min(x0)))-6)
+    abs_tol_arr = 10**-6
+
     carbon_input = generate_random_boundary_conditions(dom_n, 0, method_name = "user_defined")
 
     trial = rn(maximum_capacity=5,carbon_num = dom_n,bio_num = bio_n, carbon_input = carbon_input, necromass_distribution="notequal")
@@ -51,8 +56,9 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     trial.rearrange_constants()
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
     trial.reorder_constants_with_comp_nature()
+    trial.adaptation(dom_initial)
     trial.microbe_carbon_switch(Switch_matrix)
-    solution = trial.solve_network(x0, t_span, t_span_list, solv_method = 'Radau', first_tim_step = 0.001, max_tim_step = 0.5)
+    solution = trial.solve_network(x0, t_span, t_span_list, solv_method = 'LSODA', rel_tol = rel_tol_arr, abs_tol = abs_tol_arr, first_tim_step = 0.01, max_tim_step = 10)
 
     seed_dic = {sim : {'dom_number': dom_n, 'biomass_number': bio_n,
     'oxidation_state': ox_state,
@@ -114,7 +120,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     return sim, seed_dic
 
 def run_sim (random_seed_number, c_n):
-    details_subfolder = 'carbon_'+str(c_n) + '_' + str(random_seed_number)+'_ip_' + str(ip)
+    details_subfolder = 'expo_adaptation_carbon_'+str(c_n) + '_' + str(random_seed_number)+'_ip_' + str(ip)
     simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
     results_dir = os.path.join(project_dir, "results", details_subfolder)
     figures_dir = os.path.join(project_dir, "figures", details_subfolder)
@@ -145,7 +151,7 @@ def run_sim (random_seed_number, c_n):
     rng = np.random.default_rng()
     for N in bio_n_series:
         S_witches_4 = np.zeros((4,c_n,N))
-        for n, baseline, activity_pc in zip([0,1,2],["b_2", "b_3", "b_4"] ,[0.25, 0.5, 0.75]):
+        for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.25, 0.5, 0.75]):
             K = math.ceil(activity_pc*N)
             s = np.array([1]*K + [0] * (N-K))
             S_witch_i = np.zeros((c_n, N))
@@ -154,8 +160,8 @@ def run_sim (random_seed_number, c_n):
                 S_witch_i[i,:] = rng.permutation(s)
                 i+=1
             S_witches_4[n,:,:] = S_witch_i
-        for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.3, 0.5, 0.7]):
-            for label, random_seed in zip(["a"], [1]):
+        for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.25, 0.5, 0.75]):
+            for label, random_seed in zip(["a", "b", "c", "d", "e"], [1,2,3,4,5]):
                 x_s_witch = rng.permutation(S_witches_4[n,:,:], axis = 1)
                 for t_dom_initial in init_dom_list:
                     exp_details = baseline + "_" + label + "_"

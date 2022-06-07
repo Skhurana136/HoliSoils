@@ -12,7 +12,7 @@ simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
 
-filename = os.path.join(results_dir, "combined_dataset.pkl")
+filename = os.path.join(results_dir, "1c_null_combined_dataset.pkl")
 diversity_data = pd.read_pickle(filename)
 diversity_data = diversity_data.drop_duplicates()
 diversity_data['DOC_initial_int'] = round(diversity_data.DOC_initial, -3)
@@ -25,13 +25,26 @@ plt.legend()
 
 #%%
 sns.kdeplot(x = "DOC_removal", data = diversity_data)
+#%%
+sns.kdeplot(x = "ratio_t_50", data = diversity_data)
+#%%
+diversity_data['S_initial_int'] = round(diversity_data.S_initial,1)
+print(diversity_data.S_initial_int.unique())
+#%%
+for s in list(diversity_data.S_initial_int.unique()):
+    sns.kdeplot(x = 100 - diversity_data[diversity_data.S_initial_int==s]["DOC_removal"], data = diversity_data[diversity_data.S_initial_int==s], label=s)
+plt.legend()
 
+#%%
+for s in list(diversity_data.S_initial_int.unique()):
+    sns.kdeplot(x = diversity_data[diversity_data.S_initial_int==s]["ratio_t_50"], data = diversity_data[diversity_data.S_initial_int==s], label=s)
+plt.legend()
 #%%
 sns.kdeplot(x = "T_50", data = diversity_data, hue = "carbon_species")
 plt.xscale("log")
 plt.xlabel("Time for 37% loss (days)")
 plt.tight_layout()
-plt.savefig(os.path.join(figures_dir, "t_63_distribution.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "1c_null_t_63_distribution.png"), dpi = 300)
 #%%
 sns.kdeplot(x = "S_initial", data = diversity_data, label = "Initial S")
 sns.kdeplot(x = "S_max", data = diversity_data, label = "Max S")
@@ -67,48 +80,20 @@ plt.xlabel("Biomass: initial/final")
 #%%
 # Filter out all failed simulations:
 compl = diversity_data[diversity_data.Status>=0]
-g = sns.FacetGrid(compl, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
+#%%
+g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species",sharey="row", sharex=True)
 g.map(sns.scatterplot, "S_initial", "DOC_removal", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "DOC_removal_S_i_compl.png"), dpi = 300)
-g = sns.FacetGrid(compl, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
+plt.savefig(os.path.join(figures_dir, "1c_null_DOC_removal_S_i_compl.png"), dpi = 300)
+g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
+g.map(sns.scatterplot, "S_initial", "DOC_removal_mid", alpha = 0.7)
+g.add_legend()
+plt.savefig(os.path.join(figures_dir, "1c_null_DOC_removal_mid_S_i_compl.png"), dpi = 300)
+g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "ratio_t_50", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "t_50_ratio_S_i_compl.png"), dpi = 300)
-g = sns.FacetGrid(compl, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
+plt.savefig(os.path.join(figures_dir, "1c_null_t_50_ratio_S_i_compl.png"), dpi = 300)
+g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "t_50_days", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "t_50_days_S_i_compl.png"), dpi = 300)
-
-#%%
-# List simulations that failed and explore parameters
-failed = diversity_data[diversity_data.Status<0].reset_index()
-print(failed.shape)
-failed['bcratio'] = failed["biomass_species"]/failed["carbon_species"]
-failed['docbcratio'] = failed.DOC_initial_int*100/(failed.carbon_species*failed.biomass_species*failed.activity)
-compl['bcratio'] = compl["biomass_species"]/compl["carbon_species"]
-compl['docbcratio'] = compl.DOC_initial_int*100/(compl.carbon_species*compl.biomass_species*compl.activity)
-#%%
-failed = diversity_data[diversity_data.Status<0].reset_index()
-failed['Seed'] = failed['Seed'].map(str)
-failed['carbon_species'] = failed['carbon_species'].map(str)
-failed['biomass_species'] = failed['biomass_species'].map(str)
-failed['DOC_initial_int'] = failed['DOC_initial_int'].astype(int).map(str)
-failed['id'] = failed[['Seed', 'carbon_species', 'biomass_species', 'DOC_initial_int']].agg('-'.join, axis=1)
-print(failed.id.unique())
-#%%
-#seeds_paras_exploration
-failed['sid'] = failed['Sim_series']+"/bio_n_"+failed['biomass_species']+"/dom_initial_"+failed['DOC_initial_int']+"/seed_"+failed['Seed']
-#%%
-unique_c_n = list(failed['carbon_species'].unique())
-for c_n in unique_c_n[:1]:
-    subset = failed[failed.carbon_species==c_n]
-    seed_cn_list = list(subset["Seed"].unique())
-    key_sid = subset.sid.tolist()
-    for seed in seed_cn_list:
-        details_subfolder = 'carbon_' + c_n + '_' + seed + '_ip_0'
-        simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
-        filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
-        seed_details = pd.read_pickle(filename)
-        for k in key_sid:
-            print(k, seed_details[k]['message'])
+plt.savefig(os.path.join(figures_dir, "1c_null_t_50_days_S_i_compl.png"), dpi = 300)
