@@ -13,7 +13,7 @@ cn_list = [3,6,12,18]
 count = 0
 for c_n in cn_list:
     row = []
-    filename = os.path.join(results_dir, '1c_adaptation_carbon_' + str(c_n) + "_diversity_data.pkl")
+    filename = os.path.join(results_dir, 'gamma_adaptation_carbon_' + str(c_n) + "_diversity_data.pkl")
     diversity_data = pd.read_pickle(filename)
     # Additional data processing
     diversity_data['DOC_removal'] = (1 - diversity_data.DOC_end/diversity_data.DOC_input) * 100
@@ -37,5 +37,5 @@ for c, a in zip (cases, [100, 10, 10, 10, 10, 10, 25, 25, 25, 25, 25, 50, 50, 50
     combined_data.loc[combined_data['Sim_series']==c, 'activity'] = a
 
 combined_data = combined_data.drop_duplicates()
-combined_data.to_csv(os.path.join(project_dir, "results", "1c_adaptation_combined_dataset.csv"))
-combined_data.to_pickle(os.path.join(project_dir, "results", "1c_adaptation_combined_dataset.pkl"))
+combined_data.to_csv(os.path.join(project_dir, "results", "gamma_adaptation_combined_dataset.csv"))
+combined_data.to_pickle(os.path.join(project_dir, "results", "gamma_adaptation_combined_dataset.pkl"))
