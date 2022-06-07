@@ -12,7 +12,7 @@ simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
 
-filename = os.path.join(results_dir, "1c_null_combined_dataset.pkl")
+filename = os.path.join(results_dir, "1c_adaptation_combined_dataset.pkl")
 diversity_data = pd.read_pickle(filename)
 diversity_data = diversity_data.drop_duplicates()
 diversity_data['DOC_initial_int'] = round(diversity_data.DOC_initial, -3)
@@ -44,7 +44,7 @@ sns.kdeplot(x = "T_50", data = diversity_data, hue = "carbon_species")
 plt.xscale("log")
 plt.xlabel("Time for 37% loss (days)")
 plt.tight_layout()
-plt.savefig(os.path.join(figures_dir, "1c_null_t_63_distribution.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "1c_adaptation_t_63_distribution.png"), dpi = 300)
 #%%
 sns.kdeplot(x = "S_initial", data = diversity_data, label = "Initial S")
 sns.kdeplot(x = "S_max", data = diversity_data, label = "Max S")
@@ -84,16 +84,36 @@ compl = diversity_data[diversity_data.Status>=0]
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species",sharey="row", sharex=True)
 g.map(sns.scatterplot, "S_initial", "DOC_removal", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_null_DOC_removal_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "1c_adaptation_DOC_removal_S_i_compl.png"), dpi = 300)
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "DOC_removal_mid", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_null_DOC_removal_mid_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "1c_adaptation_DOC_removal_mid_S_i_compl.png"), dpi = 300)
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "ratio_t_50", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_null_t_50_ratio_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "1c_adaptation_t_50_ratio_S_i_compl.png"), dpi = 300)
 g = sns.FacetGrid(data = diversity_data, col = 'activity', row = 'DOC_initial_int', hue = "carbon_species")
 g.map(sns.scatterplot, "S_initial", "t_50_days", alpha = 0.7)
 g.add_legend()
-plt.savefig(os.path.join(figures_dir, "1c_null_t_50_days_S_i_compl.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "1c_adaptation_t_50_days_S_i_compl.png"), dpi = 300)
+
+#%%
+import numpy as np
+from DS.solvers.diff_eqn_system import generate_random_parameters
+dom_n = 3
+bio_n = 2
+biomass_initial = 100
+total_dom_initial = 1000
+ox_state, enzparams, zparams, vparams, kparams, mparams = generate_random_parameters(dom_n, bio_n,5*np.sum(biomass_initial))
+#%%
+dom_initial = np.ones(dom_n)
+dom_initial[np.argmin(ox_state)] = total_dom_initial - dom_n + 1
+vparams_s = vparams.reshape(dom_n, bio_n)
+#%% 
+scaling_vector = dom_initial.reshape(-1,1)
+v_params = vparams_s * (scaling_vector/np.mean(scaling_vector))
+#%%
+dom_initial_expo = np.random.default_rng().standard_exponential(dom_n) + total_dom_initial/10
+scaling_vector = dom_initial_expo.reshape(-1,1)
+v_params_expo = vparams_s * (scaling_vector/np.mean(scaling_vector))
