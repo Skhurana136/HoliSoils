@@ -256,7 +256,7 @@ cbar.ax.get_xaxis().labelpad = -27
 cbar.ax.set_xlabel('Initial available carbon (uM)')#, rotation = 180)
 legend1 = plt.legend(handles = [reg_line], bbox_to_anchor = (0.2,-0.2))
 ax1.add_artist(legend1)
-#plt.savefig(os.path.join(figures_dir, "decay_const_null_condense.png"), dpi = 300, bbox_inches = 'tight')
+plt.savefig(os.path.join(figures_dir, "dexp_ecay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 fig, ax = plt.subplots(1,1)
 g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "b", hue = "c")
@@ -275,7 +275,7 @@ plt.text(10100,-0.011, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==10000][
 plt.text(13000,-0.013, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==15000]['r2'].values[0],2)))
 g.set_ylabel("Slope")
 g.set_xlabel("Initial available carbon (uM)")
-#plt.savefig(os.path.join(figures_dir, "decay_const_exp_reg_paras_null_condense.png"), dpi = 300, bbox_inches = 'tight')
+plt.savefig(os.path.join(figures_dir, "exp_decay_const_reg_paras_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 #%%
 reg_line = mlines.Line2D([], [], linestyle = '-', color = "red", marker = None, label='Regression')
 
@@ -305,8 +305,7 @@ for doci in init_doc_list:
         yerr = np.nan
     funcres.append([doci,b, popt_func[0], popt_func[1], yerr])
 funcresdf = pd.DataFrame.from_records(funcres, columns = ["DOC_initial", "Biomass_initial",  "a", "c", "r2"])
-#plt.xticks(ticks = [0.5,1,5,10,50], labels = [0.5,1,5,10,50])
-#plt.yticks(ticks = [0.0002, 0.0005,0.001,0.002,0.004], labels = [0.0002, 0.0005,0.001,0.002,0.004])
+
 sm = plt.cm.ScalarMappable(cmap='YlGnBu')
 sm.set_array([])
 cbar = plt.colorbar(sm, pad = 0.25, orientation = 'horizontal')
@@ -317,7 +316,7 @@ cbar.ax.get_xaxis().labelpad = -27
 cbar.ax.set_xlabel('Initial available carbon (uM)')#, rotation = 180)
 legend1 = plt.legend(handles = [reg_line], bbox_to_anchor = (0.2,-0.2))
 ax1.add_artist(legend1)
-#plt.savefig(os.path.join(figures_dir, "decay_const_null_condense.png"), dpi = 300, bbox_inches = 'tight')
+plt.savefig(os.path.join(figures_dir, "sqrt_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 fig, ax = plt.subplots(1,1)
 g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "r2", hue = "c")
@@ -331,39 +330,18 @@ for t in leg_labels:
 plt.legend(leg_handles, new_leg, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 g.set_ylabel("Slope")
 g.set_xlabel("Initial available carbon (uM)")
+plt.savefig(os.path.join(figures_dir, "sqrt_metrics_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 ## PREDICT FUNCTION PARAMETERS FOR IMPACT ON DECAY CONSTANT ##
 #%%
-X = non_100['S_initial']*non_100["activity"]/100#.to_numpy(dtype = float)
-y = 1/ non_100['ratio_t_50'].to_numpy(dtype = float)
-meany = np.mean(y)
-b = non_100["Biomass_initial"].to_numpy(dtype = float)[0]
-plt.scatter(X,y, marker = '.', label = "data")
-plt.ylabel("Normalized decay constant")
-plt.xlabel("Active Shannon diversity")
-try:
-    popt_func, pcov_e = curve_fit(linres, xdata=X, ydata=y, p0=[0.01,0.1])
-    ypred = linres(X, popt_func[0], popt_func[1])
-    yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
-    plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'lin_func')
-except:
-    popt_func = [np.nan, np.nan]
-    yerr = np.nan
-plt.text(1.5, 0.3, "slope: "+str(round(popt_func[0],2)))
-plt.text(1.5, 0.2, "intercept: "+str(round(popt_func[1],2)))
-plt.text(1.5, 0.1, "R2: "+str(round(yerr,2)))
-#plt.savefig(os.path.join(figures_dir, "linear_predict_impact_decay_constant_null.png"), dpi = 300)
-#%%
-non_100["exp_x_var"] = non_100['S_initial']*non_100["activity"]/100#non_100['carbon_species']*non_100["activity"]/100
+non_100["exp_x_var"] = non_100['S_initial']*non_100["activity"]/100
 non_100 = non_100.sort_values(by=["exp_x_var"])
 X = non_100['exp_x_var']
 y = 1/non_100['ratio_t_50'].to_numpy(dtype = float)
 meany = np.mean(y)
-#size_var = 1/non_100['ratio-t_50'].to_numpy(dtype = float)
 plt.scatter(X,y, marker = '.', label = "data")
 plt.ylabel("Normalized decay constant")
 plt.xlabel("Active Shannon diversity")
-#try:
 popt_func, pcov_e = curve_fit(expres, xdata=X, ydata=y, p0=[-0.8,-0.1, 0.9])
 ypred = expres(X, popt_func[0], popt_func[1], popt_func[2])
 yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
@@ -372,7 +350,7 @@ plt.text(1.5, 0.3, "p1: "+str(round(popt_func[0],2)))
 plt.text(1.5, 0.24, "p2: "+str(round(popt_func[1],2)))
 plt.text(1.5, 0.18, "p3: "+str(round(popt_func[2],2)))
 plt.text(1.5, 0.12, "R2: "+str(round(yerr,2)))
-#plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
 
 #%%
 generalist_act = compl[compl.activity==100].reset_index()
@@ -472,16 +450,19 @@ B2_df = B2_df.sort_values(by=["exp_x_var"])
 X = B2_df['exp_x_var']
 y = B2_df["dec_const_b2_norm"]
 meany = np.mean(y)
-#size_var = 1/non_100['ratio-t_50'].to_numpy(dtype = float)
 plt.scatter(X,y, marker = '.', label = "data")
 plt.ylabel("Normalized decay constant")
-plt.xlabel("Chaange in active Shannon diversity from\n50% active microbes baseline")
+plt.xlabel("Change in activity of microbial community given\nShannon diversity from 50% active microbes baseline")
 #try:
-popt_func, pcov_e = curve_fit(sig_exp, xdata=X, ydata=y, p0=[8,0.5])
-ypred = sig_exp(X, popt_func[0], popt_func[1])
+popt_func, pcov_e = curve_fit(glf, xdata=X, ydata=y, p0=[0.1, 2, 1, 1, 0.1, 0.5])
+ypred = glf(X, popt_func[0], popt_func[1], popt_func[2], popt_func[3], popt_func[4], popt_func[5])
 yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
 plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'sig_func')
-plt.text(-1.2, 2.5, "p1: "+str(round(popt_func[0],2)))
-plt.text(-1.2, 2.3, "p2: "+str(round(popt_func[1],2)))
-plt.text(-1.2, 2.1, "R2: "+str(round(yerr,2)))
-#plt.savefig(os.path.join(figures_dir, "sigmoid_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+plt.text(-1.2, 4.6, "a: "+str(round(popt_func[0],2)))
+plt.text(-1.2, 4.3, "k: "+str(round(popt_func[1],2)))
+plt.text(-1.2, 4.0, "c: "+str(round(popt_func[2],2)))
+plt.text(-1.2, 3.7, "q: "+str(round(popt_func[3],2)))
+plt.text(-1.2, 3.4, "b: "+str(round(popt_func[4],2)))
+plt.text(-1.2, 3.1, "v: "+str(round(popt_func[5],2)))
+plt.text(-1.2, 2.8, "R2: "+str(round(yerr,2)))
+plt.savefig(os.path.join(figures_dir, "glf_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
