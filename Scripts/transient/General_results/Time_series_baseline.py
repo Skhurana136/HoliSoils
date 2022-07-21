@@ -5,11 +5,11 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
-import matplotlib
+import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
-
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "activity_loss_-02")
+filestring = sys.argv[1]
 ip = 0
 styles = {4:"darkgoldenrod", 8:"orange", 12:"indianred", 20:"purple", 28:"steelblue", 32: "darkblue"}
 cmap_bio = plt.cm.get_cmap('Blues')
@@ -35,7 +35,7 @@ xticks_label = np.linspace(0,100,100)[::10].astype(int)
 
 for seed_sim in seed_sim_list:
     for c_n in cn_list:
-        details_subfolder = 'gen_adaptation_carbon_' + str(c_n) + '_'+str(seed_sim) + '_ip_0'
+        details_subfolder = filestring + '_carbon_' + str(c_n) + '_'+str(seed_sim) + '_ip_0'
         simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
         figures_dir = os.path.join(project_dir, "figures", details_subfolder)
         hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
@@ -60,9 +60,17 @@ for seed_sim in seed_sim_list:
                 ax2.set_xticklabels(xticks_label)
                 ax1.set_xlim(left = -10)
                 ax2.set_xlim(left = -10)
-            legend1 = ax1.legend(handles = linelist, title = "Component", bbox_to_anchor = (0.9,-0.18))
-            ax1.add_artist(legend1)
-            legend2 = ax1.legend(handles = biomass_patch, ncol = 3, title = "Biomass groups", bbox_to_anchor = (0.5, -0.18))
+            legend1 = ax1.legend(handles = linelist, title = "Component", bbox_to_anchor = (0.75,-0.5), ncol = 2)
+            #ax1.add_artist(legend1)
+            sm = plt.cm.ScalarMappable(cmap=cmap_bio)
+            sm.set_array([])
+            cbar = plt.colorbar(sm, pad = 0.2, orientation = 'horizontal')
+            cbar.ax.get_xaxis().set_ticks([])
+            for j, lab in enumerate(bio_n_series):
+                cbar.ax.text(j/5, -0.5, lab, ha='center', va='center')
+            cbar.ax.get_xaxis().labelpad = -25
+            cbar.ax.set_xlabel('biomass groups')#, rotation = 180)
+            #legend2 = ax1.legend(handles = biomass_patch, ncol = 3, title = "Biomass groups", bbox_to_anchor = (0.5, -0.18))
             plt.tight_layout()
             plt.savefig(os.path.join(figures_dir, "Baseline_Time_series_categorical_"+str(dom_init)+".png"))
             plt.close()

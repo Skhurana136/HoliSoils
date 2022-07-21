@@ -130,7 +130,7 @@ for doci in init_doc_list:
     for act in activity_list_plot:
         sub = compl[(compl['DOC_initial_int']==doci) & (compl['activity']==act)].sort_values(by=['S_initial'])
         X = sub['S_initial'].to_numpy(dtype = float)
-        y = sub['ratio_t_50'].to_numpy(dtype = float)
+        y = 1/ sub['t_50_days'].to_numpy(dtype = float)
         meany = np.mean(y)
         b = sub["Biomass_initial"].to_numpy(dtype = float)[0]
         axes[idx].scatter(X,y, marker = '.', label = "data")
@@ -152,8 +152,8 @@ for a,doci in zip (ax[:,0], init_doc_list):
 for a in ax[-1,:]:
     a.set_xlabel("Initial\nShannon diversity")
 
-plt.savefig(os.path.join(figures_dir, "curv_fit_adapt.pdf"), dpi = 300)
-plt.savefig(os.path.join(figures_dir, "curv_fit_adapt.png"), dpi = 300)
+#plt.savefig(os.path.join(figures_dir, "curv_fit_adapt.pdf"), dpi = 300)
+#plt.savefig(os.path.join(figures_dir, "curv_fit_adapt.png"), dpi = 300)
 
 funcresdf = pd.DataFrame.from_records(funcres, columns = ["DOC_initial", "activity", "Biomass_initial", "a", "b", "c", "r2"])
 
@@ -183,6 +183,52 @@ axes[1,1].set_xlabel ("Active biomass")
 fig.tight_layout()
 plt.savefig(os.path.join(figures_dir, "adapt_exp_func_char_rxn_tim_ratio.png"), dpi = 300)
 
+#%%
+#sub = compl[(compl['DOC_initial_int']==doci) & (compl['activity']==act)].sort_values(by=['S_initial'])
+from mpl_toolkits import mplot3d
+fig = plt.figure(figsize=(7,7))
+ax = plt.axes(projection = '3d')
+y = compl["Biomass_initial"]
+X = compl['carbon_species']*compl['S_initial']*compl["activity"]/100
+z = 1/compl['t_50_days'].to_numpy(dtype = float)
+size_var = 1/compl['t_50_days'].to_numpy(dtype = float)
+ax.scatter(X,y, z, c = np.log10(size_var), cmap = 'YlGnBu')
+ax.set_ylabel("Initial DOC (uM)")
+ax.set_xlabel("Initial\nShannon diversity")
+ax.set_zlabel("Decay constant")
+plt.legend()
+#%%
+X_comb = compl["DOC_initial"]/(compl['carbon_species']*compl['biomass_species']*compl["activity"]/100)
+y = (1/compl['t_50_days']).to_numpy(dtype = float)
+plt.scatter(X_comb, y)#, c = compl["carbon_species"], cmap = "cividis", alpha = 0.25)
+plt.xscale("log")
+plt.ylabel("Decay constant (1/day)")
+plt.xlabel("Available carbon per active B-C connection (log scale)")
+plt.savefig(os.path.join(figures_dir, "Predict_decay_constant.png"), dpi = 300)
+#%%
+X_comb = compl["DOC_initial"]/(compl['carbon_species']*compl['biomass_species']*compl["activity"]/100)
+y = compl['ratio_t_50'].to_numpy(dtype = float)
+plt.scatter(X_comb, y)#, c = compl["carbon_species"], cmap = "cividis", alpha = 0.25)
+plt.xscale("log")
+plt.ylabel("Normalized decay constant")
+plt.xlabel("Available carbon per active B-C connection (log scale)")
+plt.savefig(os.path.join(figures_dir, "Predict_decay_constant_impact_of_specificity.png"), dpi = 300)
+
+#%%
+#X_comb = compl["DOC_initial"]/(compl['carbon_species']*compl['biomass_species']*compl["activity"]/100)
+X_comb = (compl['carbon_species']*compl['biomass_species']*compl["activity"]/100)
+y_dist = (1/compl['t_50_days']).to_numpy(dtype = float)
+#plt.hist2d(X_comb, y, bins=(2000, 2000), cmap="Greens#")
+sns.displot(x = X_comb, y = y_dist, kind = "kde")#, hue = compl["DOC_initial_int"], kind = "kde")
+#plt.xscale("log")
+#plt.yscale("log")
+#%%
+X_comb = (compl['Biomass_initial']*compl["activity"]/100)*compl["S_initial"]
+y = compl["DOC_initial"]#(1/compl['t_50_days']).to_numpy(dtype = float)#compl['S_initial']#compl['DOC_initial']#*100/(compl["activity"])
+c_var = (1/compl['t_50_days']).to_numpy(dtype = float)
+plt.scatter(X_comb, y, c = np.log10(c_var), cmap = "YlGnBu")
+plt.ylabel("Initial DOC")
+plt.xlabel("Shannon diversity x generality")
 #%%
 def abxc(x, a, b, c):
     return a * np.exp(-b * x) + c
