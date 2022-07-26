@@ -25,8 +25,8 @@ for c_n in cn_list:
     diversity_data['DOC_removal'] = (1 - diversity_data.DOC_end/diversity_data.DOC_input) * 100
     diversity_data['DOC_removal_mid'] = (1 - diversity_data.DOC_mid/diversity_data.DOC_input) * 100
     diversity_data['carbon_biomass'] = diversity_data.carbon_species * diversity_data.biomass_species
-    diversity_data['t_50_days']  = diversity_data.T_50
-    diversity_data['t_50_b1_days']  = diversity_data.T_50_B1
+    diversity_data['t_50_days']  = diversity_data.T_50*5
+    diversity_data['t_50_b1_days']  = diversity_data.T_50_B1*5
     if count == 0:
         combined_data = diversity_data
     else:
