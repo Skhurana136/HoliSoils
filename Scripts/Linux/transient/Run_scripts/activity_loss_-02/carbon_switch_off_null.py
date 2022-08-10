@@ -12,7 +12,7 @@ from DS.solvers.diff_eqn_system import generate_random_parameters
 from DS.solvers.diff_eqn_system import generate_random_initial_conditions
 from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
-project_dir = os.path.join("home","x_swakh","Projects", "HoliSoils", "activity_loss_-02")
+project_dir = os.path.join("home","x_swakh","Projects", "HoliSoils", "activity_loss_02")
 
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 filestring = sys.argv[1] + '_carbon_' #null
