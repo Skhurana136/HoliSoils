@@ -99,7 +99,7 @@ y = all_data.y_var
 X = (all_data['DOC_initial_int']/all_data['B_max_k_mean'])/(all_data['S_initial']*all_data['carbon_species']*all_data["activity_x"]/100)
 plt.scatter(X,y, c = size_var, cmap = 'YlGnBu')
 plt.ylabel("Bulk decay constant/\nmax vmax of most abundant microbe")
-plt.xlabel("Carbon availability")
+plt.xlabel("Carbon availability per active B-C connection")
 plt.xscale("log")
 #plt.legend(title = "Available C")
 sm = plt.cm.ScalarMappable(cmap="YlGnBu")
@@ -109,7 +109,7 @@ cbar.ax.get_yaxis().set_ticks([])
 for j, lab in enumerate([10,30, 50, 75, 100]):
     cbar.ax.text(2.0, j/4.2, lab, ha='center', va='center')
     cbar.ax.get_yaxis().labelpad = -20
-    cbar.ax.set_ylabel('Active Sx #C pools', rotation=90)
+    cbar.ax.set_ylabel('Activity', rotation=90)
 #plt.savefig(os.path.join(figures_dir, "decay_constant_predict_null_condense.png"), dpi = 300)
 #%%
 fig, axes = plt.subplots(2,3, figsize = (10,4), sharey =True, sharex=True)
@@ -350,7 +350,7 @@ cbar.ax.get_xaxis().labelpad = -27
 cbar.ax.set_xlabel('Initial available carbon (uM)')#, rotation = 180)
 legend1 = plt.legend(handles = [reg_line], bbox_to_anchor = (0.2,-0.2))
 ax1.add_artist(legend1)
-plt.savefig(os.path.join(figures_dir, "dexp_ecay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "dexp_ecay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 fig, ax = plt.subplots(1,1)
 g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "b", hue = "c")
@@ -369,7 +369,7 @@ plt.text(10100,-0.011, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==10000][
 plt.text(13000,-0.013, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==15000]['r2'].values[0],2)))
 g.set_ylabel("Slope")
 g.set_xlabel("Initial available carbon (uM)")
-plt.savefig(os.path.join(figures_dir, "exp_decay_const_reg_paras_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "exp_decay_const_reg_paras_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 #%%
 reg_line = mlines.Line2D([], [], linestyle = '-', color = "red", marker = None, label='Regression')
 
@@ -410,7 +410,7 @@ cbar.ax.get_xaxis().labelpad = -27
 cbar.ax.set_xlabel('Initial available carbon (uM)')#, rotation = 180)
 legend1 = plt.legend(handles = [reg_line], bbox_to_anchor = (0.2,-0.2))
 ax1.add_artist(legend1)
-plt.savefig(os.path.join(figures_dir, "sqrt_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "sqrt_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 fig, ax = plt.subplots(1,1)
 g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "r2", hue = "c")
@@ -424,7 +424,7 @@ for t in leg_labels:
 plt.legend(leg_handles, new_leg, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 g.set_ylabel("Slope")
 g.set_xlabel("Initial available carbon (uM)")
-plt.savefig(os.path.join(figures_dir, "sqrt_metrics_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "sqrt_metrics_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 ## PREDICT FUNCTION PARAMETERS FOR IMPACT ON DECAY CONSTANT ##
 #%%
@@ -444,7 +444,7 @@ plt.text(1.5, 0.3, "p1: "+str(round(popt_func[0],2)))
 plt.text(1.5, 0.24, "p2: "+str(round(popt_func[1],2)))
 plt.text(1.5, 0.18, "p3: "+str(round(popt_func[2],2)))
 plt.text(1.5, 0.12, "R2: "+str(round(yerr,2)))
-plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
+#plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
 
 #%%
 generalist_act = compl[compl.activity==100].reset_index()
