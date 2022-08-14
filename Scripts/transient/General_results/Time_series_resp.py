@@ -1,4 +1,3 @@
-#%%
 # ## Import libraries
 import os
 import numpy as np
@@ -10,7 +9,7 @@ import sys
 
 ## LOAD RESULTS
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","activity_loss_-02")
-filestring = 'null'#sys.argv[1]
+filestring = sys.argv[1]
 ip = 0
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 styles = {"a":"darkgoldenrod", "b":"purple", "c":"indianred", "d":"steelblue", "e":"orange"}
@@ -18,25 +17,23 @@ cn_list = [3,6,12,18]
 bio_n_series = [4,8,16,32]
 init_dom_list = [1000,2000,5000,10000,15000]
 grey_patch = mpatches.Patch(color="black", label= 'Baseline')#, alpha = 0.5)
-gold_patch = mpatches.Patch(color="darkgoldenrod", alpha = 0.4, label= 'Varying microbial\activity')#, alpha = 0.5)
+gold_patch = mpatches.Patch(color="darkgoldenrod", alpha = 0.4, label= 'Varying microbial activity')#, alpha = 0.5)
 linelist = [grey_patch, gold_patch]
 
 time_span = np.linspace(0,36505, int(36500/5))
 xticks_plot = time_span[::730].astype(int)
 xticks_label = np.linspace(0,100,100)[::10].astype(int)
-#%%
-for seed_sim in seed_sim_list[:1]:
-    for c_n in cn_list[:1]:
+for seed_sim in seed_sim_list:
+    for c_n in cn_list:
         details_subfolder = filestring + '_carbon_' + str(c_n) + '_'+str(seed_sim) + '_ip_0'
         simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
         figures_dir = os.path.join(project_dir, "figures", details_subfolder)
         hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
-
         for base, act_label in zip(["b_2", "b_3", "b_4"], ["10%","25%", "50%", "75%"]):
             #print(base)
-            for dom_init in init_dom_list[:1]:
+            for dom_init in init_dom_list:
                 #print(case)
-                for c_b_r in bio_n_series[:1]:
+                for c_b_r in bio_n_series:
                     np_list = []
                     fig, ax1 = plt.subplots(figsize = (6,4))
                     plt.title (act_label + " microbial activity")# with initial DOM" + str(dom_init) )
