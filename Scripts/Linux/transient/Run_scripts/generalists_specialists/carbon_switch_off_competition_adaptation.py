@@ -15,7 +15,7 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
 filestring = sys.argv[1] + '_carbon_'
 
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'func_div')
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', func_div')
 
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
