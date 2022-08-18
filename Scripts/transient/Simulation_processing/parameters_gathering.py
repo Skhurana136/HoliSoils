@@ -58,4 +58,4 @@ for c_n in cn_list:
 
 import pandas as pd
 df = pd.DataFrame(all_para_arr, columns = ['vmax','Ks','Oxidation_state','Activity'])
-df.to_csv(results_dir, sys.argv[1] + "_parameters.csv")
+df.to_csv(os.path.join(results_dir, sys.argv[1] + "_parameters.csv"))
