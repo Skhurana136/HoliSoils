@@ -164,8 +164,8 @@ def run_sim (random_seed_number, c_n):
         for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.25, 0.5, 0.75]):
             K = math.ceil(activity_pc*N*c_n)
             s = random.sample(range(0,N*c_n), K)
-            s_r = list(int(np.floor(x/n)) for x in s)
-            s_c = list( x - y*c_n for x,y in zip(s, s_r))
+            s_r = list(int(np.floor(x/N)) for x in s)
+            s_c = list( x - y*N for x,y in zip(s, s_r))
             S_witches_4[n,s_r,s_c] = 1
         for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.25, 0.5, 0.75]):
             for label, random_seed in zip(["a", "b", "c", "d", "e"], [1,2,3,4,5]):

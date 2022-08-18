@@ -137,7 +137,7 @@ def run_sim (random_seed_number, c_n):
             print("Path exists already")
             break
         else:
-            os.mkdir(sub_dir)
+            os.makedirs(sub_dir)
 
     hfile_to_write = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'w')
 
