@@ -7,7 +7,7 @@ import h5py
 
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "activity_loss_-02")
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'func_div')
 results_dir = os.path.join(project_dir, "results")
 filestring = sys.argv[1] + '_carbon_' #null
 seed_sim_list = seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]

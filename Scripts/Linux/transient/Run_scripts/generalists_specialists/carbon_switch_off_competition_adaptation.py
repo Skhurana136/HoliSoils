@@ -7,20 +7,45 @@ import csv
 import math
 import random
 import sys
+import argparse
 
 from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 from DS.solvers.diff_eqn_system import generate_random_parameters
 from DS.solvers.diff_eqn_system import generate_random_initial_conditions
 from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
-filestring = sys.argv[1] + '_carbon_'
-
 project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'func_div')
 
-seed_sim_list = [13061989]#[610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
+CLI=argparse.ArgumentParser()
+CLI.add_argument(
+  "--sim_label",  # name on the CLI - drop the `--` for positional/required parameters
+  type=str,
+  default="null",  # default if nothing is provided
+)
+CLI.add_argument(
+  "--seeds_num",  # name on the CLI - drop the `--` for positional/required parameters
+  nargs="*",  # 0 or more values expected => creates a list
+  type=int,
+  default=[610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989],  # default if nothing is provided
+)
+CLI.add_argument(
+  "--carbon_num",  # name on the CLI - drop the `--` for positional/required parameters
+  nargs="*",  # 0 or more values expected => creates a list
+  type=int,
+  default=[3,6,12,18],  # default if nothing is provided
+)
+CLI.add_argument(
+  "--microbial_group_num",  # name on the CLI - drop the `--` for positional/required parameters
+  nargs="*",  # 0 or more values expected => creates a list
+  type=int,
+  default=[4,8,12,16,20,24,28,32],  # default if nothing is provided
+)
+user_args=CLI.parse_args()
+cn_list = user_args.carbon_num#[3,6,12,18]
+bio_n_series = user_args.microbial_group_num#[4,8,12,16,20,24,28,32]
+seed_sim_list = user_args.seeds_num
+filestring = user_args.sim_label + '_carbon_'
 
-cn_list = [6]#[3,6,12,18]
-bio_n_series = [4,8,12,16,20,24,28,32]
 ip = 0 #0 random scenarios
 init_dom_list = [1000,2000,5000,10000,15000]
 
