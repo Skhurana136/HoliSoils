@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name==first_4
+#SBATCH --job-name=first_4
 #SBATCH --time=05:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1

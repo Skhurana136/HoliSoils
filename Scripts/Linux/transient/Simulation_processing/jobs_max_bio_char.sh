@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name==max_bio_char
+#SBATCH --job-name=max_bio_char
 #SBATCH --time=10:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1

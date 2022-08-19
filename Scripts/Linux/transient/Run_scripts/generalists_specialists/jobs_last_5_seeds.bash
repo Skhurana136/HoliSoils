@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name==last_5
+#SBATCH --job-name=last_5
 #SBATCH --time=06:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1
