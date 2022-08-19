@@ -15,11 +15,11 @@ from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
 filestring = sys.argv[1] + '_carbon_'
 
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'activity_loss_02')
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'func_div')
 
-seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
+seed_sim_list = [13061989]#[610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
-cn_list = [3,6,12,18]
+cn_list = [6]#[3,6,12,18]
 bio_n_series = [4,8,12,16,20,24,28,32]
 ip = 0 #0 random scenarios
 init_dom_list = [1000,2000,5000,10000,15000]
@@ -66,6 +66,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     trial.rearrange_constants()
     trial.identify_components_natures(recalcitrance_criterion="oxidation_state")
     trial.reorder_constants_with_comp_nature()
+    trial.adaptation(dom_initial)
     trial.microbe_carbon_switch(Switch_matrix)
     solution = trial.solve_network(x0, t_span, t_span_list, solv_method = 'LSODA', rel_tol = rel_tol_arr, abs_tol = abs_tol_arr, first_tim_step = 0.01, max_tim_step = 10)
 
@@ -83,7 +84,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     'sim_status':solution.status,
     'message': solution.message}}
         
-    sim_array = solution.y.T#.copy()[::int(5/t_step)]
+    sim_array = solution.y.T
 
     dataset_category = sim
     
@@ -139,7 +140,7 @@ def run_sim (random_seed_number, c_n):
             print("Path exists already")
             break
         else:
-            os.mkdir(sub_dir)
+            os.makedirs(sub_dir)
 
     hfile_to_write = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'w')
 
@@ -161,9 +162,11 @@ def run_sim (random_seed_number, c_n):
     for N in bio_n_series:
         S_witches_4 = np.zeros((4,c_n,N))
         for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.25, 0.5, 0.75]):
-            K = math.ceil(activity_pc*N)
-            s = random.sample(range(0,N), K)
-            S_witches_4[n,:,s] = 1
+            K = math.ceil(activity_pc*N*c_n)
+            s = random.sample(range(0,N*c_n), K)
+            s_r = list(int(np.floor(x/N)) for x in s)
+            s_c = list( x - y*N for x,y in zip(s, s_r))
+            S_witches_4[n,s_r,s_c] = 1
         for n, baseline, activity_pc in zip([0,1,2,3],["b_2", "b_3", "b_4", "b_5"] ,[0.1, 0.25, 0.5, 0.75]):
             for label, random_seed in zip(["a", "b", "c", "d", "e"], [1,2,3,4,5]):
                 x_s_witch = rng.permutation(S_witches_4[n,:,:], axis = 1)
