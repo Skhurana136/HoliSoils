@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=sim_proc
+#SBATCH --job-name=calc_resp
 #SBATCH --time=10:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1
