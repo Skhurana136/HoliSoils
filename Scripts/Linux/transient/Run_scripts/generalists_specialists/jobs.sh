@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH --job-name==test_carbon_null
-#SBATCH --time=10:00:00
+#SBATCH --time=01:30:00
 #SBATCH --mem=2000
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022

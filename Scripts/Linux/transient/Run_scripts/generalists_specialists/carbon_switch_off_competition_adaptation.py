@@ -17,9 +17,9 @@ filestring = sys.argv[1] + '_carbon_'
 
 project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'func_div')
 
-seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
+seed_sim_list = [13061989]#[610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
-cn_list = [12,18]#[3,6,12,18]
+cn_list = [6]#[3,6,12,18]
 bio_n_series = [4,8,12,16,20,24,28,32]
 ip = 0 #0 random scenarios
 init_dom_list = [1000,2000,5000,10000,15000]
