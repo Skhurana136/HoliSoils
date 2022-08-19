@@ -162,11 +162,8 @@ h.set_axis_labels("Active B-C connections", "Normalized decay constant")
 
 ## PREDICT FUNCTION PARAMETERS OF DECAY CONSTANT ##
 #%%
-def linres(x, a, c):
-    return a * x + c
-
-def expres(x, a, b, c):
-    return a * np.exp(b * x) + c
+def powlaw(x, a, b):
+    return a * (x**b)
 
 def sig(x, k, c):
     return c + 1/(1+((x)**k))**(1/k)
@@ -174,108 +171,16 @@ def sig(x, k, c):
 def glf (x, a, k, c, q, b, v):
     return a + (k-a)/(c + q* np.exp(-b*x))**(1/v)
 
+def glf_simp (x, a):
+    return (1 + np.exp(-x))**(-a)
+
 def sqf (x, a, c):
     return a * np.sqrt(x) + c
 
 def sig_exp(x,k,c):
     return c + 1/(1+np.exp(-k*x))
 
-#%%
-funcres = []
-fig, axes = plt.subplots(1,5, figsize = (10,2), sharex = True, sharey = True)
-ax = axes.flatten()
-idx = 0
-for doci in init_doc_list:
-    sub = compl[(compl['DOC_initial_int']==doci)].sort_values(by=['S_initial'])
-    X = sub['S_initial']*sub['carbon_species']*sub["activity"]/100#.to_numpy(dtype = float)
-    y = 1/ sub['t_50_days'].to_numpy(dtype = float)
-    meany = np.mean(y)
-    b = sub["Biomass_initial"].to_numpy(dtype = float)[0]
-    axes[idx].scatter(X,y, marker = '.', label = "data")
-    axes[idx].set_title(str(doci) + " uM")
-    try:
-        popt_func, pcov_e = curve_fit(linres, xdata=X, ydata=y, p0=[0.0001,0.0001])
-        ypred = linres(X, popt_func[0], popt_func[1])
-        yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
-        axes[idx].plot(X, ypred, 'r-', alpha = 0.6, label = 'lin_func')
-    except:
-        popt_func = [np.nan, np.nan]
-        yerr = np.nan
-    funcres.append([doci, b, popt_func[0], popt_func[1],yerr])
-    idx=idx+1
-ax[0].set_ylabel("Decay constant\n(1/day)")
-for a in ax[:]:
-    a.set_xlabel("Active B-C connections")
-funcresdf = pd.DataFrame.from_records(funcres, columns = ["DOC_initial", "Biomass_initial", "a", "c", "r2"])
-plt.show()
 
-plt.figure()
-g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "r2", hue = "c")
-g.set_ylabel("Slope")
-g.set_xlabel("Initial available carbon (uM)")
-plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-#plt.savefig(os.path.join(figures_dir, "decay_const_reg_paras_null.png"), dpi = 300, bbox_inches = 'tight')
-
-#%%
-reg_line = mlines.Line2D([], [], linestyle = '-', color = "red", marker = None, label='Regression')
-funcres = []
-
-compl["X_regr"] = compl['S_initial']*compl['carbon_species']*compl["activity"]/100
-compl = compl.sort_values(by = "X_regr")
-X = compl.X_regr
-y = 1/compl['t_50_days'].to_numpy(dtype = float)
-size_var = 1/compl['t_50_days'].to_numpy(dtype = float)
-fig, ax1 = plt.subplots(1,1)
-plt.scatter(X,y, c = compl["DOC_initial"], cmap = 'YlGnBu')
-plt.ylabel("Decay constant (1/day)")
-plt.xlabel("Active S x #C pools")
-for doci in init_doc_list:
-    sub = compl[(compl['DOC_initial_int']==doci)]
-    X_sub =sub.X_regr
-    y_sub = 1/sub['t_50_days'].to_numpy(dtype = float)
-    meany = np.mean(y_sub)
-    size_var = 1/sub['t_50_days'].to_numpy(dtype = float)
-    try:
-        popt_func, pcov_e = curve_fit(expres, xdata=X_sub, ydata=y_sub, p0=[-0.01,-1, -0.0001])
-        X_sub_sort = X_sub.sort_values()
-        ypred = expres(X_sub_sort, popt_func[0], popt_func[1], popt_func[2])
-        yerr = 1-np.sum((ypred-y_sub)**2)/np.sum((y_sub - meany)**2)
-        plt.plot(X_sub_sort, ypred, 'r-', alpha = 0.6)
-    except:
-        popt_func = [np.nan, np.nan, np.nan]
-        yerr = np.nan
-    funcres.append([doci,b, popt_func[0], popt_func[1],popt_func[2], yerr])
-funcresdf = pd.DataFrame.from_records(funcres, columns = ["DOC_initial", "Biomass_initial", "a", "b", "c", "r2"])
-sm = plt.cm.ScalarMappable(cmap='YlGnBu')
-sm.set_array([])
-cbar = plt.colorbar(sm, pad = 0.25, orientation = 'horizontal')
-cbar.ax.get_xaxis().set_ticks([])
-for j, lab in enumerate(init_doc_list):
-    cbar.ax.text(j/4, -0.5, lab, ha='center', va='center')
-cbar.ax.get_xaxis().labelpad = -27
-cbar.ax.set_xlabel('Initial available carbon (uM)')#, rotation = 180)
-legend1 = plt.legend(handles = [reg_line], bbox_to_anchor = (0.2,-0.2))
-ax1.add_artist(legend1)
-plt.savefig(os.path.join(figures_dir, "dexp_ecay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
-
-fig, ax = plt.subplots(1,1)
-g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "b", hue = "c")
-leg_handles, leg_labels = g.get_legend_handles_labels()
-new_leg = leg_labels
-for t in leg_labels:
-    if leg_labels.index(t) in [1,2,3,4,5,7,8,9,10,11]:
-        new_leg[leg_labels.index(t)] = str(np.round(np.float64(t),3))
-    else:
-        pass
-plt.legend(leg_handles, new_leg, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-plt.text(1300,-0.002, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==1000]['r2'].values[0],2)))
-plt.text(2100,-0.003, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==2000]['r2'].values[0],2)))
-plt.text(5100,-0.007, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==5000]['r2'].values[0],2)))
-plt.text(10100,-0.011, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==10000]['r2'].values[0],2)))
-plt.text(13000,-0.013, "r2: "+str(round(funcresdf[funcresdf.DOC_initial==15000]['r2'].values[0],2)))
-g.set_ylabel("Slope")
-g.set_xlabel("Initial available carbon (uM)")
-plt.savefig(os.path.join(figures_dir, "exp_decay_const_reg_paras_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 #%%
 reg_line = mlines.Line2D([], [], linestyle = '-', color = "red", marker = None, label='Regression')
 
@@ -296,15 +201,15 @@ for doci in init_doc_list:
     meany = np.mean(y_sub)
     size_var = 1/sub['t_50_days'].to_numpy(dtype = float)
     try:
-        popt_func, pcov_e = curve_fit(sqf, xdata=X_sub, ydata=y_sub, p0=[0.0001, 1])
-        ypred = sqf(X_sub, popt_func[0], popt_func[1])
+        popt_func, pcov_e = curve_fit(powlaw, xdata=X_sub, ydata=y_sub, p0=[0.0001, 0.5])
+        ypred = powlaw(X_sub, popt_func[0], popt_func[1])
         yerr = 1-np.sum((ypred-y_sub)**2)/np.sum((y_sub - meany)**2)
         plt.plot(X_sub, ypred, 'r-', alpha = 0.6)
     except:
         popt_func = [np.nan, np.nan]
         yerr = np.nan
-    funcres.append([doci,b, popt_func[0], popt_func[1], yerr])
-funcresdf = pd.DataFrame.from_records(funcres, columns = ["DOC_initial", "Biomass_initial",  "a", "c", "r2"])
+    funcres.append([doci, popt_func[0], popt_func[1], yerr])
+funcresdf = pd.DataFrame.from_records(funcres, columns = ["DOC_initial", "a", "b", "r2"])
 
 sm = plt.cm.ScalarMappable(cmap='YlGnBu')
 sm.set_array([])
@@ -316,21 +221,23 @@ cbar.ax.get_xaxis().labelpad = -27
 cbar.ax.set_xlabel('Initial available carbon (uM)')#, rotation = 180)
 legend1 = plt.legend(handles = [reg_line], bbox_to_anchor = (0.2,-0.2))
 ax1.add_artist(legend1)
-plt.savefig(os.path.join(figures_dir, "sqrt_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
+plt.savefig(os.path.join(figures_dir, "powlaw_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 fig, ax = plt.subplots(1,1)
-g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "r2", hue = "c")
+g = sns.scatterplot(data = funcresdf, x = "DOC_initial", y = "a", size = "r2", hue = "b")
 leg_handles, leg_labels = g.get_legend_handles_labels()
 new_leg = leg_labels
 for t in leg_labels:
     if leg_labels.index(t) in [1,2,3,4,5,7,8,9,10,11]:
-        new_leg[leg_labels.index(t)] = str(np.round(np.float64(t),3))
+        new_leg[leg_labels.index(t)] = str(np.round(np.float64(t),2))
     else:
         pass
+new_leg[0] = "Exponent"
+new_leg[6] = "Score"
 plt.legend(leg_handles, new_leg, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-g.set_ylabel("Slope")
+g.set_ylabel("Scaling factor")
 g.set_xlabel("Initial available carbon (uM)")
-plt.savefig(os.path.join(figures_dir, "sqrt_metrics_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
+plt.savefig(os.path.join(figures_dir, "powlaw_metrics_decay_const_compet_adapt_condense.png"), dpi = 300, bbox_inches = 'tight')
 
 ## PREDICT FUNCTION PARAMETERS FOR IMPACT ON DECAY CONSTANT ##
 #%%
@@ -342,15 +249,15 @@ meany = np.mean(y)
 plt.scatter(X,y, marker = '.', label = "data")
 plt.ylabel("Normalized decay constant")
 plt.xlabel("Active Shannon diversity")
-popt_func, pcov_e = curve_fit(expres, xdata=X, ydata=y, p0=[-0.8,-0.1, 0.9])
-ypred = expres(X, popt_func[0], popt_func[1], popt_func[2])
+popt_func, pcov_e = curve_fit(powlaw, xdata=X, ydata=y, p0=[-0.8,-0.1])
+ypred = powlaw(X, popt_func[0], popt_func[1])
 yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
 plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'exp_func')
 plt.text(1.5, 0.3, "p1: "+str(round(popt_func[0],2)))
 plt.text(1.5, 0.24, "p2: "+str(round(popt_func[1],2)))
-plt.text(1.5, 0.18, "p3: "+str(round(popt_func[2],2)))
+#plt.text(1.5, 0.18, "p3: "+str(round(popt_func[2],2)))
 plt.text(1.5, 0.12, "R2: "+str(round(yerr,2)))
-plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
+#plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
 
 #%%
 generalist_act = compl[compl.activity==100].reset_index()
@@ -465,4 +372,19 @@ plt.text(-1.2, 3.7, "q: "+str(round(popt_func[3],2)))
 plt.text(-1.2, 3.4, "b: "+str(round(popt_func[4],2)))
 plt.text(-1.2, 3.1, "v: "+str(round(popt_func[5],2)))
 plt.text(-1.2, 2.8, "R2: "+str(round(yerr,2)))
-plt.savefig(os.path.join(figures_dir, "glf_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "glf_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+#%%
+def logistic_func(x, L, b):
+    return L/(1+np.exp(-b*(x)))
+
+plt.scatter(X,y, marker = '.', label = "data", alpha = 0.1)
+plt.ylabel("Normalized decay constant")
+plt.xlabel("Change in activity of microbial community given\nShannon diversity from 50% active microbes baseline")
+popt_func, pcov_e = curve_fit(logistic_func, xdata=X, ydata=y, p0=[2, 0.5])
+ypred = logistic_func(X, popt_func[0], popt_func[1])
+yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
+plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'sig_func')
+plt.text(-1.2, 4.6, "L: "+str(round(popt_func[0],2)))
+plt.text(-1.2, 4.3, "b: "+str(round(popt_func[1],2)))
+plt.text(-1.2, 3.7, "R2: "+str(round(yerr,2)))
+plt.savefig(os.path.join(figures_dir, "logistic_func_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
