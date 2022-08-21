@@ -3,7 +3,6 @@ import os
 import pandas as pd
 from scipy import stats
 from scipy.optimize import curve_fit
-from scipy.stats import gamma, beta
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -387,4 +386,132 @@ plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'sig_func')
 plt.text(-1.2, 4.6, "L: "+str(round(popt_func[0],2)))
 plt.text(-1.2, 4.3, "b: "+str(round(popt_func[1],2)))
 plt.text(-1.2, 3.7, "R2: "+str(round(yerr,2)))
-plt.savefig(os.path.join(figures_dir, "logistic_func_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "logistic_func_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+
+#%%
+base_sims = B2_df[B2_df['exp_x_var'] == 0.0]
+print(base_sims.Sim_series.unique())
+#%%
+sns.boxplot(y = 'dec_const_b2_norm', x = "S_initial_int", data = base_sims)
+#%%
+wide_var = B2_df[B2_df['S_initial_int']==1.4]
+sns.boxplot(y = 'dec_const_b2_norm', x = "Seed", data = base_sims)
+plt.xticks(rotation=90)
+#%%
+seed_var = B2_df[B2_df['Seed'].isin([610229235, 643338060, 714504443, 983307757])]
+sns.boxplot(y = 'dec_const_b2_norm', x = "Sim_series", data = base_sims)
+#%%
+import h5py
+def gather_paras(sim_data):
+    dom_n, bio_n = sim_data['species_number']
+    paras = sim_data['parameters']
+    dying = np.tile(paras['mortality_const'], (dom_n, 1)).flatten().reshape(-1,1)
+    exo_enz = np.tile(paras['exo_enzyme_rate'], (dom_n, 1)).flatten().reshape(-1,1)
+    v_params = np.asarray(paras['max_rate']).flatten().reshape(-1,1)*np.asarray(paras['carbon_uptake']).flatten().reshape(-1,1)
+    k_params = v_params*np.asarray(paras['half_saturation']).flatten().reshape(-1,1)
+    ox = np.asarray(list([x]*bio_n for x in paras['oxidation_state'])).flatten().reshape(-1,1)
+    paras_arr = np.append(np.append(np.append(dying, exo_enz, axis=1),np.append(v_params, k_params, axis = 1), axis = 1), ox, axis = 1)
+    return paras_arr
+#%%
+seed_sim_list = [610229235, 643338060, 714504443, 983307757]
+cn_list = [3,6,12,18]
+bio_n_series = [4]
+init_dom_list = [1000,2000,5000,10000,15000]
+filestring = "competition_adaptation_carbon_"
+
+all_para_arr = np.zeros((0,9))
+for c_n in cn_list:
+    row = []
+    c_b_row = []
+    results_filename = os.path.join(results_dir, filestring + str(c_n))
+
+    for seed_sim in seed_sim_list:
+        # Load all datasets and save their Shannon and diversity indices in a dataframe
+        seed_all = 'seed_'+str(seed_sim)
+        
+        details_subfolder = filestring + str(c_n) + '_'+str(seed_sim) + '_ip_0'
+        simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
+        hrw = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r+')
+        
+        for b_n in bio_n_series:
+            for t_dom_initial in init_dom_list:
+                c_b = "bio_n_"+ str(b_n)
+                dom_init = "dom_initial_" + str(t_dom_initial)
+                doc_input = (t_dom_initial)
+                seed_arr = np.zeros((c_n*b_n,1))+seed_sim
+                carbon_arr = np.zeros((c_n*b_n,1))+c_n
+                seed_carbon = np.append(seed_arr, carbon_arr, axis = 1)
+                for base, act in zip(["b_4"], [0.5]):
+                    act_arr = np.zeros((c_n*b_n,1))+act
+                    seed_sim_arr = np.append(seed_carbon, act_arr, axis = 1)
+                    if base == "b_1":
+                        base_case = "b_1_all_"
+                        sim_data = hrw[base_case][c_b][dom_init][seed_all]
+                        paras_sim = np.append(seed_sim_arr, gather_paras(sim_data), axis = 1)
+                        all_para_arr = np.append(all_para_arr, paras_sim, axis = 0)
+                    else:
+                        for label,label_id in zip(["a", "b", "c","d","e"], [0,1,2,3,4]):
+                            sim = base + "_" + label + "_"
+                            level_arr = np.zeros((c_n*b_n,1))+label_id
+                            sim_data = hrw[sim][c_b][dom_init][seed_all]
+                            seed_sim_level = np.append(seed_sim_arr, level_arr, axis = 1)
+                            paras_sim = np.append(seed_sim_level, gather_paras(sim_data), axis = 1)
+                            all_para_arr = np.append(all_para_arr, paras_sim, axis = 0)
+        hrw.close()
+#%%
+para_df = pd.DataFrame(all_para_arr, columns = ['Seed', 'carbon_species','Activity', 'level_id', 'm', 'exo_enz','vmax', 'k', 'oxidation_state'])
+para_df.loc[para_df["level_id"] == 0.0, "Sim_series"] = 'b_4_a_'
+para_df.loc[para_df["level_id"] == 1.0, "Sim_series"] = 'b_4_b_'
+para_df.loc[para_df["level_id"] == 2.0, "Sim_series"] = 'b_4_c_'
+para_df.loc[para_df["level_id"] == 3.0, "Sim_series"] = 'b_4_d_'
+para_df.loc[para_df["level_id"] == 4.0, "Sim_series"] = 'b_4_e_'
+#%%
+func_div = para_df.groupby(['Seed', 'carbon_species', 'Sim_series', 'level_id'])['vmax', 'k', 'm', 'exo_enz'].var().reset_index()
+func_div["Seed"] = func_div["Seed"].astype(int)
+func_div["carbon_species"] = func_div["carbon_species"].astype(int)
+#%%
+seed_paras = pd.merge(seed_var, func_div[["Seed", "carbon_species", "Sim_series", "level_id","m","exo_enz", "vmax", "k"]], on = ["Seed", "carbon_species", "Sim_series"])
+seed_paras.drop_duplicates()
+#%%
+seed_paras['num_cum'] = seed_paras.exo_enz*seed_paras.vmax
+sns.boxplot(y = 'num_cum', x = "Sim_series", data = seed_paras)
+#%%
+sns.jointplot(data = seed_paras, x = 'k', y = 'num_cum', kind = 'kde', hue ='carbon_species')
+#%%
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+X = seed_paras[['vmax', 'DOC_initial_int','m', 'exo_enz']]
+X = StandardScaler().fit_transform(X)
+pca = PCA(n_components=2)
+principalComponents = pca.fit_transform(X)
+#%%
+principalDf = pd.DataFrame(data = principalComponents
+             , columns = ['principal component 1', 'principal component 2'])
+pca_df = pd.concat([seed_paras, principalDf], axis = 1)
+#%%
+sns.scatterplot(data = pca_df, x = 'principal component 1', y = 'principal component 2',
+hue = 'Seed')#'dec_const_b2_norm')
+#%%
+components = pca.components_.T
+colmax = np.abs(components).max()
+fig,ax = plt.subplots(1,1)
+ax.imshow(components, cmap="RdBu_r", vmax=colmax, vmin=-colmax)
+ax.set_yticklabels(['', 'vmax', 'DOC_initial_int','m', 'exo_enz'])
+ax.set_xticklabels(['', "Comp. 1", "Comp. 2"])
+#%%
+sns.scatterplot(y = 'dec_const_b2_norm', x = "carbon_species", hue = "Sim_series", data = seed_paras)
+#%%
+seed_paras["v_k"] = seed_paras.vmax/seed_paras.k
+g = sns.FacetGrid(seed_paras, col="Sim_series",  row="DOC_initial_int", hue = "carbon_species", palette = "tab10")
+g.map(sns.scatterplot, "v_k",  "T_50")
+g.add_legend()
+#%%
+vkl2 = seed_paras[seed_paras['v_k']<2e-6]
+g = sns.FacetGrid(vkl2, col="Sim_series",  row="DOC_initial_int", hue = "carbon_species", palette = "tab10")
+g.map(sns.scatterplot, "v_k",  "T_50")
+g.add_legend()
+#%%
+sns.jointplot(para_df["m"], para_df["vmax"])
+#%%
+sns.jointplot(para_df["m"], para_df["vmax"], kind = 'kde', hue = para_df['Activity'])
