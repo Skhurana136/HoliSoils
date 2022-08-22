@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#SBATCH --job-name==test_carbon_null
-#SBATCH --time=01:30:00
+#SBATCH --job-name=sim_proc
+#SBATCH --time=10:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022
@@ -15,5 +15,5 @@ module load buildtool-easybuild/4.5.3-nsce8837e7
 module load foss/2020b
 module load Anaconda/2021.05-nsc1
 conda activate ds-envsci-env
-python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Run_scripts/generalists_specialists/carbon_switch_off_competition_adaptation.py" "competition_adaptation"
+python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/simulation_proc.py" "competition_adaptation"
 # Scripts ends here
