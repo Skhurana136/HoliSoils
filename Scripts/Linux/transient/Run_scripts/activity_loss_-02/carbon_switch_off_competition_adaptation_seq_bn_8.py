@@ -160,7 +160,7 @@ def run_sim (random_seed_number, c_n):
 
     rng = np.random.default_rng()
     for N in bio_n_series:
-        S_witches_4 = np.zeros((4,c_n,N))
+        S_witches_4 = np.zeros((7,c_n,N))
         for n, baseline, K in zip([0,1,2,3,4,5,6],["b_2", "b_3", "b_4", "b_5","b_6", "b_7", "b_8"] ,[1,2,3,4,5,6,7]):
             s = random.sample(range(0,N), K)
             S_witches_4[n,:,s] = 1
