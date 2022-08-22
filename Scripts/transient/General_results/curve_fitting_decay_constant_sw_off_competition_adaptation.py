@@ -404,16 +404,18 @@ sns.boxplot(y = 'dec_const_b2_norm', x = "Sim_series", data = base_sims)
 import h5py
 def gather_paras(sim_data):
     dom_n, bio_n = sim_data['species_number']
+    init_bio = sim_data['initial_conditions']['biomass']
+    init_bio_sum = np.sum(init_bio)
     paras = sim_data['parameters']
-    dying = np.tile(paras['mortality_const'], (dom_n, 1)).flatten().reshape(-1,1)
-    exo_enz = np.tile(paras['exo_enzyme_rate'], (dom_n, 1)).flatten().reshape(-1,1)
-    v_params = np.asarray(paras['max_rate']).flatten().reshape(-1,1)*np.asarray(paras['carbon_uptake']).flatten().reshape(-1,1)
+    dying = np.tile(init_bio*np.asarray(paras['mortality_const'])/init_bio_sum, (dom_n, 1)).flatten().reshape(-1,1)
+    exo_enz = np.tile(init_bio*np.asarray(paras['exo_enzyme_rate'])/init_bio_sum, (dom_n, 1)).flatten().reshape(-1,1)
+    v_params = (init_bio*np.asarray((paras['max_rate']))/init_bio_sum).flatten().reshape(-1,1)*np.asarray(paras['carbon_uptake']).flatten().reshape(-1,1)
     k_params = v_params*np.asarray(paras['half_saturation']).flatten().reshape(-1,1)
     ox = np.asarray(list([x]*bio_n for x in paras['oxidation_state'])).flatten().reshape(-1,1)
     paras_arr = np.append(np.append(np.append(dying, exo_enz, axis=1),np.append(v_params, k_params, axis = 1), axis = 1), ox, axis = 1)
     return paras_arr
 #%%
-seed_sim_list = [610229235, 643338060, 714504443, 983307757]
+seed_sim_list = seed_list#[610229235, 643338060, 714504443, 983307757]
 cn_list = [3,6,12,18]
 bio_n_series = [4]
 init_dom_list = [1000,2000,5000,10000,15000]
@@ -470,18 +472,20 @@ func_div = para_df.groupby(['Seed', 'carbon_species', 'Sim_series', 'level_id'])
 func_div["Seed"] = func_div["Seed"].astype(int)
 func_div["carbon_species"] = func_div["carbon_species"].astype(int)
 #%%
-seed_paras = pd.merge(seed_var, func_div[["Seed", "carbon_species", "Sim_series", "level_id","m","exo_enz", "vmax", "k"]], on = ["Seed", "carbon_species", "Sim_series"])
+seed_paras = pd.merge(B2_df, func_div[["Seed", "carbon_species", "Sim_series", "level_id","m","exo_enz", "vmax", "k"]], on = ["Seed", "carbon_species", "Sim_series"])
 seed_paras.drop_duplicates()
 #%%
 seed_paras['num_cum'] = seed_paras.exo_enz*seed_paras.vmax
-sns.boxplot(y = 'num_cum', x = "Sim_series", data = seed_paras)
+sns.boxplot(y = 'num_cum', x = "Seed", data = seed_paras)
 #%%
 sns.jointplot(data = seed_paras, x = 'k', y = 'num_cum', kind = 'kde', hue ='carbon_species')
 #%%
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-X = seed_paras[['vmax', 'DOC_initial_int','m', 'exo_enz']]
+seed_paras["log_doc_initial_int"] = np.log(seed_paras["DOC_initial"])
+seed_paras["vmax100000"] = seed_paras["vmax"]*100000
+X = seed_paras[['vmax100000', 'm', 'exo_enz']]#,'log_doc_initial_int']]
 X = StandardScaler().fit_transform(X)
 pca = PCA(n_components=2)
 principalComponents = pca.fit_transform(X)
@@ -490,21 +494,28 @@ principalDf = pd.DataFrame(data = principalComponents
              , columns = ['principal component 1', 'principal component 2'])
 pca_df = pd.concat([seed_paras, principalDf], axis = 1)
 #%%
-sns.scatterplot(data = pca_df, x = 'principal component 1', y = 'principal component 2',
-hue = 'Seed')#'dec_const_b2_norm')
+sns.scatterplot(data = pca_df.sort_values(by=["ratio_t_50"]), x = 'principal component 1', y = 'principal component 2',
+hue = pca_df['dec_const_b2_norm']*10)
 #%%
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 components = pca.components_.T
 colmax = np.abs(components).max()
 fig,ax = plt.subplots(1,1)
-ax.imshow(components, cmap="RdBu_r", vmax=colmax, vmin=-colmax)
-ax.set_yticklabels(['', 'vmax', 'DOC_initial_int','m', 'exo_enz'])
+im = ax.imshow(components, cmap="RdBu_r", vmax=colmax, vmin=-colmax)
+ax.set_yticks(np.arange(0,components.shape[0],1).astype(int))
+ax.set_yticklabels(['vmax', 'm', 'exo_enz'])#,'DOC_initial_int']) #'DOC_initial_int',
 ax.set_xticklabels(['', "Comp. 1", "Comp. 2"])
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.05)
+plt.colorbar(im, cax=cax)
+#%%
+
 #%%
 sns.scatterplot(y = 'dec_const_b2_norm', x = "carbon_species", hue = "Sim_series", data = seed_paras)
 #%%
 seed_paras["v_k"] = seed_paras.vmax/seed_paras.k
 g = sns.FacetGrid(seed_paras, col="Sim_series",  row="DOC_initial_int", hue = "carbon_species", palette = "tab10")
-g.map(sns.scatterplot, "v_k",  "T_50")
+g.map(sns.scatterplot, "num_cum",  "dec_const_b2_norm")
 g.add_legend()
 #%%
 vkl2 = seed_paras[seed_paras['v_k']<2e-6]
