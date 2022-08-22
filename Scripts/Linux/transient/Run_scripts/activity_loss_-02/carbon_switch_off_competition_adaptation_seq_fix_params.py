@@ -53,9 +53,9 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     ox_state_1 = np.random.uniform(-0.5, 0.5, dom_n-1)
     #ox_state = np.append(ox_state_1, np.zeros((1,1))-0.2)
     ox_state = np.insert(ox_state_1, np.random.choice(len(ox_state_1), size=1), -0.2)
-    enzparams = np.zeros((bio_n,1))+0.2
-    kparams = np.zeros((dom_n*bio_n,1))+500
-    zparams = np.zeros((dom_n*bio_n,1))+0.2
+    enzparams = np.zeros((bio_n,))+0.2
+    kparams = np.zeros((dom_n*bio_n,))+500
+    zparams = np.zeros((dom_n*bio_n,))+0.2
     ##specific lines end here
     
     rel_tol_arr = 10**-6
