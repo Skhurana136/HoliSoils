@@ -336,7 +336,7 @@ B2_df = pd.merge(all_data, T_50_B2, on = ["Seed", "DOC_initial_int", "carbon_spe
 B2_df = B2_df.drop(['index'], axis = 1)
 B2_df["ratio_t_50_b2"] = B2_df["T_50"]/B2_df["T_50_B2"]
 B2_df["dec_const_b2_norm"] = 1/B2_df.ratio_t_50_b2
-
+B2_df = B2_df.dropna()
 #%%
 B2_df["x_b2"] = B2_df.S_initial*(B2_df.activity/100 - 50/100)
 B2_df["x_b2_v2"] = B2_df.S_initial
@@ -346,33 +346,13 @@ plt.ylabel("Normalized decay constant")
 plt.xlabel("Change in active Shannon diversity")
 #plt.savefig(os.path.join(figures_dir, "impact_decay_constant_compet_adapt_S_active_B2.png"), dpi = 300, bbox_inches='tight')
 
-#%%
-B2_df = B2_df.dropna()
 ### PREDICT IMPACT OF CHANGING DIVERSITY on DECAY CONSTANT B2
 #%%
-
 B2_df["exp_x_var"] = B2_df.S_initial*(B2_df.activity/100 - 50/100)#/B2_df.DOC_initial#
 B2_df = B2_df.sort_values(by=["exp_x_var"])
 X = B2_df['exp_x_var']
 y = B2_df["dec_const_b2_norm"]
 meany = np.mean(y)
-plt.scatter(X,y, marker = '.', label = "data")
-plt.ylabel("Normalized decay constant")
-plt.xlabel("Change in activity of microbial community given\nShannon diversity from 50% active microbes baseline")
-#try:
-popt_func, pcov_e = curve_fit(glf, xdata=X, ydata=y, p0=[0.1, 2, 1, 1, 0.1, 0.5])
-ypred = glf(X, popt_func[0], popt_func[1], popt_func[2], popt_func[3], popt_func[4], popt_func[5])
-yerr = 1 - (np.sum((ypred-y)**2)/np.sum((y - meany)**2))
-plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'sig_func')
-plt.text(-1.2, 4.6, "a: "+str(round(popt_func[0],2)))
-plt.text(-1.2, 4.3, "k: "+str(round(popt_func[1],2)))
-plt.text(-1.2, 4.0, "c: "+str(round(popt_func[2],2)))
-plt.text(-1.2, 3.7, "q: "+str(round(popt_func[3],2)))
-plt.text(-1.2, 3.4, "b: "+str(round(popt_func[4],2)))
-plt.text(-1.2, 3.1, "v: "+str(round(popt_func[5],2)))
-plt.text(-1.2, 2.8, "R2: "+str(round(yerr,2)))
-#plt.savefig(os.path.join(figures_dir, "glf_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
-#%%
 def logistic_func(x, L, b):
     return L/(1+np.exp(-b*(x)))
 
@@ -389,140 +369,72 @@ plt.text(-1.2, 3.7, "R2: "+str(round(yerr,2)))
 #plt.savefig(os.path.join(figures_dir, "logistic_func_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
 
 #%%
-base_sims = B2_df[B2_df['exp_x_var'] == 0.0]
-print(base_sims.Sim_series.unique())
+func_div = pd.read_csv(os.path.join(results_dir, "competition_adaptation_parameters.csv"))
+fig, axes = plt.subplots(3,3, sharex = 'col', figsize = (12,6))
+sns.scatterplot(data = func_div, x = 'vmax_mean', y = 'vmax_median', hue = 'biomass_species', ax = axes[0,0])
+axes[0,0].set_title("vmax")
+sns.scatterplot(data = func_div, x = 'vmax_mean', y = 'vmax_std', hue = 'biomass_species', ax = axes[1,0])
+sns.scatterplot(data = func_div, x = 'vmax_mean', y = 'vmax_skew', hue = 'biomass_species', ax = axes[2,0])
+sns.scatterplot(data = func_div, x = 'k_mean', y = 'k_median', hue = 'biomass_species', ax = axes[0,1])
+axes[0,1].set_title("Half-sat-const")
+sns.scatterplot(data = func_div, x = 'k_mean', y = 'k_std', hue = 'biomass_species', ax = axes[1,1])
+sns.scatterplot(data = func_div, x = 'k_mean', y = 'k_skew', hue = 'biomass_species', ax = axes[2,1])
+sns.scatterplot(data = func_div, x = 'm_mean', y = 'm_median', hue = 'biomass_species', ax = axes[0,2])
+axes[0,2].set_title("Mortality")
+sns.scatterplot(data = func_div, x = 'm_mean', y = 'm_std', hue = 'biomass_species', ax = axes[1,2])
+sns.scatterplot(data = func_div, x = 'm_mean', y = 'm_skew', hue = 'biomass_species', ax = axes[2,2])
+for ax in axes.flatten()[:-1]:
+    ax.legend([],[], frameon=False)
+for ax in axes.flatten()[:]:
+    ax.set_ylabel('')
+    ax.set_xlabel('')
+for ax in axes[2,:]:
+    ax.set_xlabel("Mean")
+axes[0,0].set_ylabel("Median")
+axes[1,0].set_ylabel("Sdev")
+axes[2,0].set_ylabel("Skew")
+plt.figure()
+sns.scatterplot(data = func_div, x = "vmax_mean", y= "k_mean", hue = "carbon_species")
 #%%
-sns.boxplot(y = 'dec_const_b2_norm', x = "S_initial_int", data = base_sims)
+for s in seed_list:
+    for c in [3,6,12,18]:
+        for b in [4,8,16,32]:
+            sub_scb = func_div[(func_div["Seed"].astype(int)==s)&(func_div["carbon_species"].astype(int)==c)&(func_div["biomass_species"].astype(int)==b)]
+            v_mean_base = sub_scb[sub_scb.Sim_series.isin(['b_4_a_', 'b_4_b_','b_4_c_','b_4_d_','b_4_e_'])]['vmax_mean'].median()
+            func_div.loc[(func_div["Seed"].astype(int)==s)&(func_div["carbon_species"].astype(int)==c)&(func_div["biomass_species"].astype(int)==b), "vmax_mean_base"]=v_mean_base
 #%%
-wide_var = B2_df[B2_df['S_initial_int']==1.4]
-sns.boxplot(y = 'dec_const_b2_norm', x = "Seed", data = base_sims)
-plt.xticks(rotation=90)
+cols_to_merge = func_div.columns.to_list()
+B2_paras = pd.merge(B2_df, func_div[cols_to_merge], on = ["Seed", "biomass_species", "carbon_species", "Sim_series"])
+B2_paras.drop_duplicates()
 #%%
-seed_var = B2_df[B2_df['Seed'].isin([610229235, 643338060, 714504443, 983307757])]
-sns.boxplot(y = 'dec_const_b2_norm', x = "Sim_series", data = base_sims)
+sns.jointplot(data = B2_paras, x = 'k_mean', y = 'vmax_mean', kind = 'kde', hue ='carbon_species')
 #%%
-import h5py
-def gather_paras(sim_data):
-    dom_n, bio_n = sim_data['species_number']
-    init_bio = sim_data['initial_conditions']['biomass']
-    init_bio_sum = np.sum(init_bio)
-    paras = sim_data['parameters']
-    dying = np.tile(init_bio*np.asarray(paras['mortality_const'])/init_bio_sum, (dom_n, 1)).flatten().reshape(-1,1)
-    exo_enz = np.tile(init_bio*np.asarray(paras['exo_enzyme_rate'])/init_bio_sum, (dom_n, 1)).flatten().reshape(-1,1)
-    v_params = (init_bio*np.asarray((paras['max_rate']))/init_bio_sum).flatten().reshape(-1,1)*np.asarray(paras['carbon_uptake']).flatten().reshape(-1,1)
-    k_params = v_params*np.asarray(paras['half_saturation']).flatten().reshape(-1,1)
-    ox = np.asarray(list([x]*bio_n for x in paras['oxidation_state'])).flatten().reshape(-1,1)
-    paras_arr = np.append(np.append(np.append(dying, exo_enz, axis=1),np.append(v_params, k_params, axis = 1), axis = 1), ox, axis = 1)
-    return paras_arr
+B2_paras["x_var"] = B2_paras.DOC_initial*B2_paras.carbon_species*B2_paras.vmax_mean
+B2_paras["decay_const"] = 1/B2_df.t_50_days
 #%%
-seed_sim_list = seed_list#[610229235, 643338060, 714504443, 983307757]
-cn_list = [3,6,12,18]
-bio_n_series = [4]
-init_dom_list = [1000,2000,5000,10000,15000]
-filestring = "competition_adaptation_carbon_"
-
-all_para_arr = np.zeros((0,9))
-for c_n in cn_list:
-    row = []
-    c_b_row = []
-    results_filename = os.path.join(results_dir, filestring + str(c_n))
-
-    for seed_sim in seed_sim_list:
-        # Load all datasets and save their Shannon and diversity indices in a dataframe
-        seed_all = 'seed_'+str(seed_sim)
-        
-        details_subfolder = filestring + str(c_n) + '_'+str(seed_sim) + '_ip_0'
-        simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
-        hrw = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r+')
-        
-        for b_n in bio_n_series:
-            for t_dom_initial in init_dom_list:
-                c_b = "bio_n_"+ str(b_n)
-                dom_init = "dom_initial_" + str(t_dom_initial)
-                doc_input = (t_dom_initial)
-                seed_arr = np.zeros((c_n*b_n,1))+seed_sim
-                carbon_arr = np.zeros((c_n*b_n,1))+c_n
-                seed_carbon = np.append(seed_arr, carbon_arr, axis = 1)
-                for base, act in zip(["b_4"], [0.5]):
-                    act_arr = np.zeros((c_n*b_n,1))+act
-                    seed_sim_arr = np.append(seed_carbon, act_arr, axis = 1)
-                    if base == "b_1":
-                        base_case = "b_1_all_"
-                        sim_data = hrw[base_case][c_b][dom_init][seed_all]
-                        paras_sim = np.append(seed_sim_arr, gather_paras(sim_data), axis = 1)
-                        all_para_arr = np.append(all_para_arr, paras_sim, axis = 0)
-                    else:
-                        for label,label_id in zip(["a", "b", "c","d","e"], [0,1,2,3,4]):
-                            sim = base + "_" + label + "_"
-                            level_arr = np.zeros((c_n*b_n,1))+label_id
-                            sim_data = hrw[sim][c_b][dom_init][seed_all]
-                            seed_sim_level = np.append(seed_sim_arr, level_arr, axis = 1)
-                            paras_sim = np.append(seed_sim_level, gather_paras(sim_data), axis = 1)
-                            all_para_arr = np.append(all_para_arr, paras_sim, axis = 0)
-        hrw.close()
+plt.figure()
+sns.scatterplot(y = 'decay_const', x = "x_var", hue = "biomass_species", data = B2_paras)
+plt.xscale("log")
+plt.xlabel("Available carbon x carbon species number x average vmax")
+plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 #%%
-para_df = pd.DataFrame(all_para_arr, columns = ['Seed', 'carbon_species','Activity', 'level_id', 'm', 'exo_enz','vmax', 'k', 'oxidation_state'])
-para_df.loc[para_df["level_id"] == 0.0, "Sim_series"] = 'b_4_a_'
-para_df.loc[para_df["level_id"] == 1.0, "Sim_series"] = 'b_4_b_'
-para_df.loc[para_df["level_id"] == 2.0, "Sim_series"] = 'b_4_c_'
-para_df.loc[para_df["level_id"] == 3.0, "Sim_series"] = 'b_4_d_'
-para_df.loc[para_df["level_id"] == 4.0, "Sim_series"] = 'b_4_e_'
+sns.scatterplot(data = B2_paras, x = "vmax_mean_base", y = "vmax_mean", hue = "activity", style= "S_initial_int")
+plt.legend(bbox_to_anchor = (1.02,1))
 #%%
-func_div = para_df.groupby(['Seed', 'carbon_species', 'Sim_series', 'level_id'])['vmax', 'k', 'm', 'exo_enz'].var().reset_index()
-func_div["Seed"] = func_div["Seed"].astype(int)
-func_div["carbon_species"] = func_div["carbon_species"].astype(int)
+B2_paras["reldelvmax"] = B2_paras.vmax_mean/B2_paras.vmax_mean_base
+sub_off = B2_paras[B2_paras['Sim_series']!='b_1_all_']
+sub_off["ratio_xvar"] = (1 - sub_off.reldelvmax)
+sub_off["yplot"]  = sub_off.dec_const_b2_norm#1/sub_off.ratio_t_50
+sns.scatterplot(y = 'yplot', x = "ratio_xvar", hue = "DOC_initial_int", style = "S_initial_int",data = sub_off)
+plt.xlabel("Reduction in decomposition potential (difference in vmean)\nnormalized by decomposition potential of base case(vmean)")
+plt.ylabel("Decay constant normalized by\nthat of the base case")
+plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 #%%
-seed_paras = pd.merge(B2_df, func_div[["Seed", "carbon_species", "Sim_series", "level_id","m","exo_enz", "vmax", "k"]], on = ["Seed", "carbon_species", "Sim_series"])
-seed_paras.drop_duplicates()
+sns.scatterplot(y = 'decay_const', x = "x_var", hue = "DOC_initial_int", style = "biomass_species",data = B2_paras)
+plt.xlabel("Available carbon x carbon species number x biomass weighted vmax")
+plt.ylabel("Decay constant")
+plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 #%%
-seed_paras['num_cum'] = seed_paras.exo_enz*seed_paras.vmax
-sns.boxplot(y = 'num_cum', x = "Seed", data = seed_paras)
-#%%
-sns.jointplot(data = seed_paras, x = 'k', y = 'num_cum', kind = 'kde', hue ='carbon_species')
-#%%
-import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-seed_paras["log_doc_initial_int"] = np.log(seed_paras["DOC_initial"])
-seed_paras["vmax100000"] = seed_paras["vmax"]*100000
-X = seed_paras[['vmax100000', 'm', 'exo_enz']]#,'log_doc_initial_int']]
-X = StandardScaler().fit_transform(X)
-pca = PCA(n_components=2)
-principalComponents = pca.fit_transform(X)
-#%%
-principalDf = pd.DataFrame(data = principalComponents
-             , columns = ['principal component 1', 'principal component 2'])
-pca_df = pd.concat([seed_paras, principalDf], axis = 1)
-#%%
-sns.scatterplot(data = pca_df.sort_values(by=["ratio_t_50"]), x = 'principal component 1', y = 'principal component 2',
-hue = pca_df['dec_const_b2_norm']*10)
-#%%
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-components = pca.components_.T
-colmax = np.abs(components).max()
-fig,ax = plt.subplots(1,1)
-im = ax.imshow(components, cmap="RdBu_r", vmax=colmax, vmin=-colmax)
-ax.set_yticks(np.arange(0,components.shape[0],1).astype(int))
-ax.set_yticklabels(['vmax', 'm', 'exo_enz'])#,'DOC_initial_int']) #'DOC_initial_int',
-ax.set_xticklabels(['', "Comp. 1", "Comp. 2"])
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-plt.colorbar(im, cax=cax)
-#%%
-
-#%%
-sns.scatterplot(y = 'dec_const_b2_norm', x = "carbon_species", hue = "Sim_series", data = seed_paras)
-#%%
-seed_paras["v_k"] = seed_paras.vmax/seed_paras.k
-g = sns.FacetGrid(seed_paras, col="Sim_series",  row="DOC_initial_int", hue = "carbon_species", palette = "tab10")
-g.map(sns.scatterplot, "num_cum",  "dec_const_b2_norm")
-g.add_legend()
-#%%
-vkl2 = seed_paras[seed_paras['v_k']<2e-6]
-g = sns.FacetGrid(vkl2, col="Sim_series",  row="DOC_initial_int", hue = "carbon_species", palette = "tab10")
-g.map(sns.scatterplot, "v_k",  "T_50")
-g.add_legend()
-#%%
-sns.jointplot(para_df["m"], para_df["vmax"])
-#%%
-sns.jointplot(para_df["m"], para_df["vmax"], kind = 'kde', hue = para_df['Activity'])
+sns.scatterplot(y = "ratio_xvar", x = "activity", hue = "DOC_initial_int", style = "biomass_species", data = sub_off)
+plt.ylabel("Reduction in decomposition potential (difference in vmean)\nnormalized by decomposition potential of base case(vmean)")
+plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
