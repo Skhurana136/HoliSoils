@@ -8,7 +8,7 @@ import matplotlib.lines as mlines
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "activity_loss_-02")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_skew")
 filestring = sys.argv[1]
 ip = 0
 styles = {4:"darkgoldenrod", 8:"orange", 12:"indianred", 20:"purple", 28:"steelblue", 32: "darkblue"}
