@@ -81,7 +81,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     kparams_dist= abs(np.random.normal(600,200, dom_n*bio_n))#abs(skewnorm.rvs(skewness_para/10, loc = 800, size=bio_n*dom_n))# + 600
     kparams = kparams_dist#((kparams_dist)/max(kparams_dist))*800
     # Second order rate constant for quadratic mortality rate of microbial groups
-    mparams = np.max(vparams.reshape(dom_n, bio_n),axis=0)/(10*biomass_initial) #earlier this factor was 5 in gen_spec_skew
+    mparams = np.median(vparams.reshape(dom_n, bio_n),axis=0)/(5*np.sum(biomass_initial)) #earlier this factor was 5 in gen_spec_skew
     ##the next two lines are specifically to constrain the initialised dom and NOSC profile.
     ## In the unconstrained NOSC simulations, the next 2 lines are not included in the run scripts.
     np.random.seed(seed_sim)
