@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH --job-name=calc_resp
-#SBATCH --time=30:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022

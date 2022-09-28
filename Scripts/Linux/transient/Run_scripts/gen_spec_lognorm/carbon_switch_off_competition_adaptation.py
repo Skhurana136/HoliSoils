@@ -14,7 +14,7 @@ from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 from DS.solvers.diff_eqn_system import generate_random_initial_conditions
 from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'gen_spec_lognorm')
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'gen_spec_skew_10')
 
 CLI=argparse.ArgumentParser()
 CLI.add_argument(
@@ -67,21 +67,21 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     # Initialize the same number of parameters and initial conditions:
     dom_initial, biomass_initial = generate_random_initial_conditions (dom_n, bio_n, mean_dom_initial, mean_bio_initial, total_dom_initial, dom_bio_ratio_initial)
     x0 = np.append(dom_initial, biomass_initial)
-    mu_enz = 0.4
-    mu_z = 0.2
-    mu_v = 0.004
-    mu_k = 1
-    skewness_para = 1 #sigma/standard deviation
+    skewness_para = 55
     # First order rate constant for the production of exoenzymes by each microbial group
-    enzparams= abs(np.log(np.random.lognormal(mu_enz, sigma = skewness_para*mu_enz, size=bio_n)))
+    enzparams_dist= abs(skewnorm.rvs(skewness_para, loc = 0.4, size=bio_n))
+    enzparams = ((enzparams_dist)/max(enzparams_dist))*0.4
     #Fraction of depolymerized carbon pool that is used for microbial uptake (respiration + growth).
-    zparams= abs(np.log(np.random.lognormal(mu_z, sigma = skewness_para*mu_z, size=bio_n*dom_n)))
+    zparams_dist= abs(skewnorm.rvs(skewness_para, loc = 0.2, size=bio_n*dom_n))
+    zparams = ((zparams_dist)/max(zparams_dist))*0.2
     # M-M max rate constant for consumption of carbon compound by a particular microbial group
-    vparams= abs(np.log(np.random.lognormal(mu_v, sigma = skewness_para*mu_v,size=bio_n*dom_n)))
+    vparams_dist= abs(skewnorm.rvs(skewness_para, loc = 0.004, size=bio_n*dom_n))
+    vparams = ((vparams_dist)/max(vparams_dist))*0.004
     # M-M half saturation constant for consumption of carbon compound by a particular microbial group
-    kparams = 600*abs(np.log(np.random.lognormal(mu_k, sigma = skewness_para*mu_k,size=dom_n*bio_n)))
+    kparams_dist= abs(np.random.normal(600,200, dom_n*bio_n))#abs(skewnorm.rvs(skewness_para/10, loc = 800, size=bio_n*dom_n))# + 600
+    kparams = kparams_dist#((kparams_dist)/max(kparams_dist))*800
     # Second order rate constant for quadratic mortality rate of microbial groups
-    mparams = np.median(vparams.reshape(dom_n, bio_n),axis=0)/(5*np.sum(biomass_initial)) #earlier this factor was 5 in gen_spec_skew
+    mparams = np.max(vparams.reshape(dom_n, bio_n),axis=0)/(10*biomass_initial) #earlier this factor was 5 in gen_spec_skew
     ##the next two lines are specifically to constrain the initialised dom and NOSC profile.
     ## In the unconstrained NOSC simulations, the next 2 lines are not included in the run scripts.
     np.random.seed(seed_sim)

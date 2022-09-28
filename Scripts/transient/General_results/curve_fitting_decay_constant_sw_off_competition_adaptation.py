@@ -466,3 +466,22 @@ plt.text(-1.2, 3.4, "b: "+str(round(popt_func[4],2)))
 plt.text(-1.2, 3.1, "v: "+str(round(popt_func[5],2)))
 plt.text(-1.2, 2.8, "R2: "+str(round(yerr,2)))
 plt.savefig(os.path.join(figures_dir, "glf_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+
+#%%
+bio_n = 18
+dom_n = 6
+mu_enz = 0.4
+mu_z = 0.2
+mu_v = 0.004
+mu_k = 1
+skewness_para = 1 #sigma/standard deviation
+# First order rate constant for the production of exoenzymes by each microbial group
+enzparams= abs(np.log(np.random.lognormal(mu_enz, sigma = skewness_para*mu_enz, size=bio_n)))
+#Fraction of depolymerized carbon pool that is used for microbial uptake (respiration + growth).
+zparams= abs(np.log(np.random.lognormal(mu_z, sigma = skewness_para*mu_z, size=bio_n*dom_n)))
+# M-M max rate constant for consumption of carbon compound by a particular microbial group
+vparams= abs(np.log(np.random.lognormal(mu_v, sigma = skewness_para*mu_v,size=bio_n*dom_n)))
+# M-M half saturation constant for consumption of carbon compound by a particular microbial group
+kparams = 600*abs(np.log(np.random.lognormal(mu_k, sigma = skewness_para*mu_k,size=dom_n*bio_n)))#abs(skewnorm.rvs(skewness_para/10, loc = 800, size=bio_n*dom_n))# + 600
+# Second order rate constant for quadratic mortality rate of microbial groups
+mparams = np.median(vparams.reshape(dom_n, bio_n),axis=0)/(5*1000)
