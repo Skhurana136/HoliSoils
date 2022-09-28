@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_skew")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_skew_10")
 filestring = sys.argv[1]
 
 ip = 0
