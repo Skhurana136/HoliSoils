@@ -14,7 +14,7 @@ from DS.solvers.diff_eqn_system import ReactionNetwork as rn
 from DS.solvers.diff_eqn_system import generate_random_initial_conditions
 from DS.solvers.diff_eqn_system import generate_random_boundary_conditions
 
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'gen_spec_lognorm')
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'gen_spec_lognorm_1_5x')
 
 CLI=argparse.ArgumentParser()
 CLI.add_argument(
@@ -71,7 +71,7 @@ def run_sims (experiment, c_n, b_n, dom_initial, seed_sim, Switch_matrix, hw):
     mu_z = 0.2
     mu_v = 0.004
     mu_k = 1
-    skewness_para = 1 #sigma/standard deviation
+    skewness_para = 1.5 #sigma/standard deviation
     # First order rate constant for the production of exoenzymes by each microbial group
     enzparams= abs(np.log(np.random.lognormal(mu_enz, sigma = skewness_para*mu_enz, size=bio_n)))
     #Fraction of depolymerized carbon pool that is used for microbial uptake (respiration + growth).
