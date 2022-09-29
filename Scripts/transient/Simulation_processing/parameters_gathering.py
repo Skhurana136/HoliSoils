@@ -22,7 +22,7 @@ def gather_paras(sim_data):
     return paras_arr
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_skew")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm")
 results_dir = os.path.join(project_dir, "results")
 filestring = sys.argv[1] + "_carbon_"
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]

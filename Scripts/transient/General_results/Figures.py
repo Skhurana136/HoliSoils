@@ -8,7 +8,7 @@ import seaborn as sns
 
 ## LOAD RESULTS
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_skew")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")

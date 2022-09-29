@@ -6,7 +6,7 @@ import numpy as np
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_skew")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm")
 
 results_dir = os.path.join(project_dir, "results")
 filestring = sys.argv[1] +"_carbon_"
