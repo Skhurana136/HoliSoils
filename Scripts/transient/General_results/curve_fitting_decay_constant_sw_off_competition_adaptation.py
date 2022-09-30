@@ -12,7 +12,7 @@ import matplotlib.lines as mlines
 
 ## LOAD RESULTS
 
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","gen_spec_skew")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","activity_loss_-02")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
@@ -55,7 +55,7 @@ for i in list(range(5)):
     ax.set_xlabel("Active B-C connection \n(Sx#Cxactivity%)")
 axes.flatten()[0].set_ylabel("Decay constant (1/day)")
 plt.legend()
-#plt.savefig(os.path.join(figures_dir, "decay_constant_predict_null_panel.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "decay_constant_predict_comp_adapt_panel.png"), dpi = 300, bbox_inches = 'tight')
 
 #%%
 X = (compl['S_initial']*compl['carbon_species']*compl["activity"]/100)#compl["DOC_initial"]/
@@ -74,7 +74,7 @@ for j, lab in enumerate(init_doc_list):
     cbar.ax.text(3.0, j/4.2, lab, ha='center', va='center')
     cbar.ax.get_yaxis().labelpad = -20
     cbar.ax.set_ylabel('Initial available carbon (uM) ', rotation=90)
-#plt.savefig(os.path.join(figures_dir, "decay_constant_predict_null_condense.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "decay_constant_predict_comp_adapt_condense.png"), dpi = 300)
 #%%
 fig, axes = plt.subplots(1,5, figsize = (10,2), sharex = True, sharey = True)
 for i in list(range(5)):
@@ -99,7 +99,7 @@ for i in list(range(5)):
     ax.set_title(str(init_doc_list[i])+" (uM)")
 axes.flatten()[0].set_ylabel("Normalized reaction \ntime scale (day)")
 plt.legend()
-#plt.savefig(os.path.join(figures_dir, "impact_reaction_time_scale_null_panel.png"), dpi = 300, bbox_inches = 'tight')
+#plt.savefig(os.path.join(figures_dir, "impact_reaction_time_scale_comp_ada_panel.png"), dpi = 300, bbox_inches = 'tight')
 
 #%%
 X = (non_100['S_initial']*non_100['carbon_species']*non_100["activity"]/100)
@@ -115,7 +115,7 @@ for j, lab in enumerate(init_doc_list):
     cbar.ax.text(3.0, j/4.2, lab, ha='center', va='center')
     cbar.ax.get_yaxis().labelpad = -20
     cbar.ax.set_ylabel('Initial available carbon (uM) ', rotation=90)
-#plt.savefig(os.path.join(figures_dir, "impact_decay_constant_null_condense.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "impact_decay_constant_comp_ada_condense.png"), dpi = 300)
 
 #%%
 X = (compl['S_initial']*compl['carbon_species']*compl["activity"]/100)
@@ -131,7 +131,7 @@ for j, lab in enumerate(init_doc_list):
     cbar.ax.text(3.0, j/4.2, lab, ha='center', va='center')
     cbar.ax.get_yaxis().labelpad = -20
     cbar.ax.set_ylabel('Initial available carbon (uM) ', rotation=90)
-#plt.savefig(os.path.join(figures_dir, "impact_reaction_time_scale_null_condense.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "impact_reaction_time_scale_comp_ada_condense.png"), dpi = 300)
 
 #%%
 X_comb = (compl['carbon_species']*compl['biomass_species']*compl["activity"]/100)
@@ -139,14 +139,14 @@ y_dist = (1/compl['t_50_days']).to_numpy(dtype = float)
 sns.displot(x = X_comb, y = y_dist, hue = compl["DOC_initial_int"],kind = "kde")
 plt.xlabel("Active B-C connections")
 plt.ylabel("Decay constant")
-#plt.savefig(os.path.join(figures_dir, "decay_constant_null_kde.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "decay_constant_comp_adapt_kde.png"), dpi = 300)
 #%%
 X_comb = (non_100['carbon_species']*non_100['biomass_species']*non_100["activity"]/100)
 y_dist = (1/non_100['ratio_t_50']).to_numpy(dtype = float)
 sns.displot(x = X_comb, y = y_dist, hue = non_100["DOC_initial_int"],kind = "kde")
 plt.xlabel("Active B-C connections")
 plt.ylabel("Mormalised decay constant")
-#plt.savefig(os.path.join(figures_dir, "impact_decay_constant_null_kde.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "impact_decay_constant_comp_adapt_kde.png"), dpi = 300)
 #%%
 X_comb = (compl['carbon_species']*compl['biomass_species']*compl["activity"]/100)
 y_dist = (1/compl['t_50_days']).to_numpy(dtype = float)
@@ -256,7 +256,7 @@ plt.text(1.5, 0.3, "p1: "+str(round(popt_func[0],2)))
 plt.text(1.5, 0.24, "p2: "+str(round(popt_func[1],2)))
 #plt.text(1.5, 0.18, "p3: "+str(round(popt_func[2],2)))
 plt.text(1.5, 0.12, "R2: "+str(round(yerr,2)))
-#plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "exponential_predict_impact_decay_constant_compet_adapt.png"), dpi = 300)
 
 #%%
 generalist_act = compl[compl.activity==100].reset_index()
@@ -268,13 +268,13 @@ compl["decay_const"] = 1/compl.t_50_days
 h = sns.violinplot(x = compl.DOC_initial_int, y = compl.decay_const, hue = compl.carbon_species)
 plt.xlabel("Initial available carbon (uM)")
 plt.ylabel("Decay constant")
-#plt.savefig(os.path.join(figures_dir, "decay_constant_comp_adapt_initial_DOC_violin.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "decay_constant_comp_adapt_initial_DOC_violin.png"), dpi = 300)
 
 #%%
 h = sns.violinplot(x = generalist_act.DOC_initial_int, y = generalist_act.decay_const, hue = generalist_act.carbon_species)
 plt.xlabel("Initial available carbon (uM)")
 plt.ylabel("Decay constant")
-#plt.savefig(os.path.join(figures_dir, "decay_constant_null_initial_DOC_violin_full_active.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "decay_constant_comp_adapt_initial_DOC_violin_full_active.png"), dpi = 300)
 
 #%%
 plt.figure(figsize = (8,4))
@@ -296,7 +296,7 @@ for doc_i in init_doc_list:
         ax1.legend("")
 ax1.legend(bbox_to_anchor=(0.75,-0.2), title = "Shannon diversity", ncol = 4)
 plt.xlabel("Number of Carbon species")
-#plt.savefig(os.path.join(figures_dir, "decay_constant_compet_adapt_initial_DOC_#c_#S_box_full_active.png"), dpi = 300)
+plt.savefig(os.path.join(figures_dir, "decay_constant_compet_adapt_initial_DOC_#c_#S_box_full_active.png"), dpi = 300)
 #%%
 h = sns.boxplot(x = generalist_act.S_initial_int, y = generalist_act.decay_const, hue = generalist_act.DOC_initial_int)
 plt.xlabel("Shannon diversity")
@@ -366,7 +366,7 @@ plt.plot(X, ypred, 'r-', alpha = 0.6, label = 'sig_func')
 plt.text(-1.2, 4.6, "L: "+str(round(popt_func[0],2)))
 plt.text(-1.2, 4.3, "b: "+str(round(popt_func[1],2)))
 plt.text(-1.2, 3.7, "R2: "+str(round(yerr,2)))
-#plt.savefig(os.path.join(figures_dir, "logistic_func_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
+plt.savefig(os.path.join(figures_dir, "logistic_func_predict_impact_decay_constant_compet_adapt_B2.png"), dpi = 300, bbox_inches = 'tight')
 
 #%%
 func_div = pd.read_csv(os.path.join(results_dir, "competition_adaptation_parameters.csv"))
@@ -393,6 +393,8 @@ for ax in axes[2,:]:
 axes[0,0].set_ylabel("Median")
 axes[1,0].set_ylabel("Sdev")
 axes[2,0].set_ylabel("Skew")
+plt.savefig(os.path.join(figures_dir, "paras_mean_distribution.png"), dpi = 300, bbox_inches = 'tight')
+
 plt.figure()
 sns.scatterplot(data = func_div, x = "vmax_mean", y= "k_mean", hue = "carbon_species")
 #%%
@@ -418,17 +420,23 @@ plt.xscale("log")
 plt.xlabel("Available carbon x carbon species number x average vmax")
 plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 #%%
-sns.scatterplot(data = B2_paras, x = "vmax_mean_base", y = "vmax_mean", hue = "activity", style= "S_initial_int")
-plt.legend(bbox_to_anchor = (1.02,1))
+ylineqbase = np.sort(B2_paras.vmax_mean_base)
+sns.scatterplot(y = "vmax_mean", x = "vmax_mean_base", hue = "activity", style = "biomass_species", data = B2_paras)
+plt.plot(ylineqbase, ylineqbase, 'r-')
+plt.ylabel("Vmax_mean")
+plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+plt.savefig(os.path.join(figures_dir, "vmax_base_scenario_comp_adapt.png"), dpi = 300, bbox_inches = 'tight')
 #%%
 B2_paras["reldelvmax"] = B2_paras.vmax_mean/B2_paras.vmax_mean_base
-sub_off = B2_paras[B2_paras['Sim_series']!='b_1_all_']
+sub_off = B2_paras#[B2_paras['Sim_series']!='b_1_all_']
 sub_off["ratio_xvar"] = (1 - sub_off.reldelvmax)
 sub_off["yplot"]  = sub_off.dec_const_b2_norm#1/sub_off.ratio_t_50
 sns.scatterplot(y = 'yplot', x = "ratio_xvar", hue = "DOC_initial_int", style = "S_initial_int",data = sub_off)
 plt.xlabel("Reduction in decomposition potential (difference in vmean)\nnormalized by decomposition potential of base case(vmean)")
 plt.ylabel("Decay constant normalized by\nthat of the base case")
 plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+plt.savefig(os.path.join(figures_dir, "decay_const_vmax_scenario_comp_adapt.png"), dpi = 300, bbox_inches = 'tight')
+
 #%%
 sns.scatterplot(y = 'decay_const', x = "x_var", hue = "DOC_initial_int", style = "biomass_species",data = B2_paras)
 plt.xlabel("Available carbon x carbon species number x biomass weighted vmax")
@@ -436,5 +444,7 @@ plt.ylabel("Decay constant")
 plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 #%%
 sns.scatterplot(y = "ratio_xvar", x = "activity", hue = "DOC_initial_int", style = "biomass_species", data = sub_off)
+plt.axhline(y=0, c = 'r', label = "baseline")
 plt.ylabel("Reduction in decomposition potential (difference in vmean)\nnormalized by decomposition potential of base case(vmean)")
 plt.legend( bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+plt.savefig(os.path.join(figures_dir, "decay_const_activity_scenario_comp_adapt.png"), dpi = 300, bbox_inches = 'tight')

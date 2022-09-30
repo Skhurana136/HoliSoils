@@ -8,7 +8,7 @@ import matplotlib.lines as mlines
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient" ,"gen_spec_lognorm")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient" ,"gen_spec_lognorm_1_5x")
 filestring = sys.argv[1]
 
 ip = 0
