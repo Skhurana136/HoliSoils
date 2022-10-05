@@ -15,5 +15,5 @@ module load buildtool-easybuild/4.5.3-nsce8837e7
 module load foss/2020b
 module load Anaconda/2021.05-nsc1
 conda activate ds-envsci-env
-python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/calculate_cue_s.py" --scenario "gen_spec_lognorm"
+python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/calculate_cue_s.py" --sim_label "competition_adaptation" --scenario "gen_spec_lognorm"
 # Scripts ends here
