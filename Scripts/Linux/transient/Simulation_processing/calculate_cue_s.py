@@ -59,7 +59,6 @@ def calculate_s_os_func_div (sim_data):
 
 project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', scenario_folder)
 results_dir = os.path.join(project_dir, "results")
-filestring = sys.argv[1] + '_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
 cn_list = [3,6,12,18]
