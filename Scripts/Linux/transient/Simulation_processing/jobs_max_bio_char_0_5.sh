@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#SBATCH --job-name=resp_0_05
-#SBATCH --time=72:00:00
+#SBATCH --job-name=bio_char_0_5
+#SBATCH --time=10:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022
@@ -15,5 +15,5 @@ module load buildtool-easybuild/4.5.3-nsce8837e7
 module load foss/2020b
 module load Anaconda/2021.05-nsc1
 conda activate ds-envsci-env
-python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/calculate_respiration.py" "gen_spec_lognorm_0_05"
+python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/max_bio_char.py" "gen_spec_lognorm_0_5"
 # Scripts ends here
