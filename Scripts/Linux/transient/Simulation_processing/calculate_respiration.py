@@ -32,16 +32,15 @@ def calculate_R(sim_data):
     return R
 
 ## LOAD RESULTS
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', 'gen_spec_lognorm')
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
-filestring = sys.argv[1] + '_carbon_' #null
+filestring = 'competition_adaptation_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 
 cn_list = [3,6,12,18]
 bio_n_series = [4,8,12,16,20,24,28,32]
 ip = 0
 init_dom_list = [1000,2000,5000,10000,15000]
-filestring = sys.argv[1] + '_carbon_' #null
 
 for c_n in cn_list:
     row = []

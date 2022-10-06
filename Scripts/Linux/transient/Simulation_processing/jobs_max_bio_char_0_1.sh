@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=max_bio_char
+#SBATCH --job-name=bio_char_0_01
 #SBATCH --time=10:00:00
 #SBATCH --mem=2000
 #SBATCH -n 1
@@ -15,5 +15,5 @@ module load buildtool-easybuild/4.5.3-nsce8837e7
 module load foss/2020b
 module load Anaconda/2021.05-nsc1
 conda activate ds-envsci-env
-python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/max_bio_char_2.py" "competition_adaptation"
+python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/max_bio_char.py" "gen_spec_lognorm_0_01"
 # Scripts ends here
