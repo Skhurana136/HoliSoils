@@ -8,13 +8,14 @@ import matplotlib.lines as mlines
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","gen_spec_lognorm_1_5x")
-filestring = sys.argv[1]
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient" ,sys.argv[1])
+filestring = "competition_adaptation"
 ip = 0
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 styles = {"a":"darkgoldenrod", "b":"purple", "c":"indianred", "d":"steelblue", "e":"orange"}
 cn_list = [3,6,12,18]
-bio_n_series = [4]#,8,16,32]
+bio_n_series = [4,8,16,32]
 init_dom_list = [1000,2000,5000,10000,15000]
 grey_carbon = mlines.Line2D([], [], linestyle = '-', color = "grey", marker = None, label='Carbon')
 grey_biomass = mlines.Line2D([], [], linestyle = '--', color = "grey", marker = None, label='Biomass')

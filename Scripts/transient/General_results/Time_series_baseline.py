@@ -8,8 +8,9 @@ import matplotlib.lines as mlines
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm_1_5x")
-filestring = sys.argv[1]
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient" ,sys.argv[1])
+filestring = "competition_adaptation"
 ip = 0
 styles = {4:"darkgoldenrod", 8:"orange", 12:"indianred", 20:"purple", 28:"steelblue", 32: "darkblue"}
 cmap_bio = plt.cm.get_cmap('Blues')

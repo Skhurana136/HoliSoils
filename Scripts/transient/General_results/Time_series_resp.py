@@ -8,8 +8,9 @@ import matplotlib.lines as mlines
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","gen_spec_skew")
-filestring = sys.argv[1]
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient" ,sys.argv[1])
+filestring = "competition_adaptation"
 ip = 0
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
 styles = {"a":"darkgoldenrod", "b":"purple", "c":"indianred", "d":"steelblue", "e":"orange"}

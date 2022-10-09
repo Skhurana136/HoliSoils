@@ -5,9 +5,10 @@ import numpy as np
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm")
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
-filestring = sys.argv[1] +"_carbon_"
+filestring = "competition_adaptation_carbon_"
 filestring2 = "_loss_0.9"# + sys.argv[2]
 results_filename = filestring + filestring2 + "_combined_dataset"
 results_filename_cb = filestring + filestring2 + "_c_b_combined_dataset"

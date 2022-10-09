@@ -12,7 +12,7 @@ def calculate_cue(sim_data):
     for t in list(range(np.shape(B)[0])):
         delb = np.sum(B[t,:]) - np.sum(B[t-1,:])
         delc = np.sum(C[t,:]) - np.sum(C[t-1,:])
-        cue = delb/delc
+        cue[t] = delb/delc
     return cue
 
 def calculate_s_os_func_div (sim_data):

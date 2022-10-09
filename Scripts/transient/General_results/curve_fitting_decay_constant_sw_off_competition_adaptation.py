@@ -12,7 +12,7 @@ import matplotlib.lines as mlines
 
 ## LOAD RESULTS
 
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","activity_loss_-02")
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", "gen_spec_lognorm_1_5x")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")

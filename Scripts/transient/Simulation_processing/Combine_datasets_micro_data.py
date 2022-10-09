@@ -6,10 +6,10 @@ import numpy as np
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm")
-
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
-filestring = sys.argv[1] +"_carbon_"
+filestring = "competition_adaptation_carbon_"
 results_filename = filestring + "_micro_char_combined_dataset"
 
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803]#, 898393994, 420,13012022,13061989]
