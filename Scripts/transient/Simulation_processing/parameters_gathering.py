@@ -98,4 +98,4 @@ func_div = para_df.groupby(['Seed', 'biomass_species', 'carbon_species', 'Sim_se
 func_div.columns = func_div.columns.map('_'.join)
 func_div.rename(columns = {'Seed_':'Seed', 'carbon_species_':'carbon_species', 'biomass_species_': 'biomass_species', 'Sim_series_': 'Sim_series', 'level_id_':'level_id'}, inplace = True)
 
-func_div.to_csv(os.path.join(results_dir, sys.argv[1] + "_parameters.csv"))
+func_div.to_csv(os.path.join(results_dir, filestring[:-8] + "_parameters.csv"))
