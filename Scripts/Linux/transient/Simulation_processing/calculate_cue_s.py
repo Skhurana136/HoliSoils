@@ -20,15 +20,42 @@ user_args=CLI.parse_args()
 scenario_folder = user_args.scenario
 filestring = user_args.sim_label + '_carbon_'
 
+#def calculate_cue(sim_data):
+#    x = sim_data['solution']
+#    C = np.asarray(x['dom'])
+#    B = np.asarray(x['biomass'])
+#    cue = np.zeros((np.shape(B)[0],))
+#    for t in list(range(np.shape(B)[0])):
+#        delb = np.sum(B[t,:]) - np.sum(B[t-1,:])
+#        delc = np.sum(C[t,:]) - np.sum(C[t-1,:])
+#        cue[t] = delb/delc
+#    return cue
+
 def calculate_cue(sim_data):
+    dom_n, bio_n = sim_data['species_number']
+    paras = sim_data['parameters']
+    uptake_coeff = np.asarray(paras['carbon_uptake'])
+    growth_coeff = np.asarray(paras['yield_coefficient'])
+    v_enz = np.asarray(paras['exo_enzyme_rate'])
+    v_params = np.asarray(paras['max_rate'])
+    k_params = np.asarray(paras['half_saturation'])
+    max_cap = 0.15*t_dom_initial
     x = sim_data['solution']
     C = np.asarray(x['dom'])
     B = np.asarray(x['biomass'])
+    params_mult = uptake_coeff*v_params*v_enz
+    #print(np.shape(params_mult))
     cue = np.zeros((np.shape(B)[0],))
     for t in list(range(np.shape(B)[0])):
-        delb = np.sum(B[t,:]) - np.sum(B[t-1,:])
-        delc = np.sum(C[t,:]) - np.sum(C[t-1,:])
-        cue[t] = delb/delc
+        c_uptake = params_mult*B[t,:]*C[t,:][...,None]/(k_params + C[t,:][...,None])
+        c_uptake_sum = np.sum(c_uptake)
+        B_total = np.sum(B[t,:])
+        growth_sum = 0
+        for i in list(range(bio_n)):
+            #print(i)
+            growth_sum += np.sum(c_uptake[:,i]*growth_coeff[:,i]*(1 - ((B_total - B[t,i])/max_cap)))
+            #print(R_sum)
+        cue[t] = growth_sum/c_uptake_sum
     return cue
 
 def calculate_s_os_func_div (sim_data):
