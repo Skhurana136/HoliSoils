@@ -9,8 +9,8 @@ import seaborn as sns
 import matplotlib.lines as mlines
 
 ## LOAD RESULTS
-
-project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", "gen_spec_lognorm_1_5x")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "gen_spec_lognorm_1_5x")
+#project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", "gen_spec_lognorm_1_5x")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
@@ -19,6 +19,9 @@ all_data = pd.read_pickle(os.path.join(results_dir, "competition_adaptation_carb
 print(all_data.columns)
 all_data['DOC_initial_int'] = round(all_data.DOC_initial, -3)
 all_data['S_initial_int'] = round(all_data.S_initial, 1)
+all_data['NOSC_reldel_maxbio'] = (all_data.NOSC_maxbio/all_data.NOSC_initial - 1) * 100
+all_data['FD_reldel_maxbio'] = (all_data.FD_maxbio/all_data.FD_initial - 1) * 100
+all_data['Biomass_reldel_maxbio'] = (all_data.Biomass_maxbio/all_data.Biomass_initial - 1) * 100
 init_doc_list = np.sort(list(all_data.DOC_initial_int.unique()))
 activity_list = np.sort(list(all_data.activity.unique()))
 s_initial_list = np.sort(list(all_data.S_initial_int.unique()))
@@ -46,10 +49,22 @@ eqline = np.sort(all_data["NOSC_initial"])
 sns.scatterplot(x = "NOSC_initial", y = "NOSC_maxbio", hue = 'DOC_initial', data = all_data)
 plt.plot(eqline, eqline, 'r-')
 #%%
+#sns.scatterplot(x = "Biomass_reldel_maxbio", y = "NOSC_reldel_maxbio", hue = 'DOC_initial', data = all_data)
+sns.scatterplot(x = 'FD_reldel_maxbio', y = 'Biomass_reldel_maxbio', hue = 'S_initial', data = all_data)
+#%%
+all_data['x_var'] = all_data.FD_initial#/all_data.carbon_species
+all_data['y_var'] = all_data.Biomass_reldel_maxbio#/all_data.DOC_initial
+sns.scatterplot(x = 'x_var', y = 'y_var', hue = 'carbon_species', data = all_data)
+plt.yscale("log")
+plt.xscale("log")
+#plt.ylim((-500,500))
+#%%
+sns.scatterplot('carbon_species', 'NOSC_initial', hue = 'Seed', data = all_data)
+#%%
 subset = all_data[all_data.carbon_species==12]
 eqline = np.sort(subset['NOSC_initial'])
 plt.plot(eqline, eqline, 'r-')
-sns.scatterplot(x = "NOSC_initial", y = "NOSC_maxbio", hue = 'FD_initial', data = subset)
+sns.scatterplot(x = "NOSC_initial", y = "NOSC_maxbio", hue = 'FD_maxbio', data = subset)
 
 #%%
 from mpl_toolkits import mplot3d
