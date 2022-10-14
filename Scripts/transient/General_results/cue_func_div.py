@@ -31,35 +31,62 @@ sns.jointplot(y = 'CUE_maxbio', x = 'NOSC_maxbio', hue = 'DOC_initial', data = a
 #%%
 sns.scatterplot(x = "FD_initial", y = "FD_maxbio", hue = 'DOC_initial', data = all_data)
 #%%
-subset = all_data[all_data.DOC_initial==10000]
-eqline = np.sort(subset['FD_initial'])
+#subset = all_data[all_data.DOC_initial==10000]
+eqline = np.sort(all_data['FD_initial'])
 plt.plot(eqline, eqline, 'r-')
-sns.scatterplot(x = "FD_initial", y = "FD_maxbio", hue = 'carbon_species', data = subset)
-plt.xscale("log")
-plt.yscale("log")
+all_data['hue_var'] = np.log10(all_data.DOC_initial/all_data.carbon_species)
+sns.scatterplot(x = "FD_initial", y = "FD_maxbio", hue = 'DOC_initial', data = all_data)
+#plt.xscale("log")
+#plt.yscale("log")
 #%%
 subset = all_data[all_data.DOC_initial==10000]
 eqline = np.sort(subset['FD_initial'])
 plt.plot(eqline, eqline, 'r-')
 sns.scatterplot(x = "FD_initial", y = "FD_final", hue = 'carbon_species', data = subset)
-plt.xscale("log")
-plt.yscale("log")
+#plt.xscale("log")
+#plt.yscale("log")
 #%%
 eqline = np.sort(all_data["NOSC_initial"])
 sns.scatterplot(x = "NOSC_initial", y = "NOSC_maxbio", hue = 'DOC_initial', data = all_data)
 plt.plot(eqline, eqline, 'r-')
 #%%
+all_data['hue_var'] = all_data.biomass_species*all_data.activity/100#*all_data.carbon_species))
+sns.scatterplot(x = "NOSC_initial", y = "NOSC_maxbio", hue = 'hue_var', size = 'DOC_initial', data = all_data)
+plt.plot(eqline, eqline, 'r-')
+#%%
 #sns.scatterplot(x = "Biomass_reldel_maxbio", y = "NOSC_reldel_maxbio", hue = 'DOC_initial', data = all_data)
 sns.scatterplot(x = 'FD_reldel_maxbio', y = 'Biomass_reldel_maxbio', hue = 'S_initial', data = all_data)
 #%%
-all_data['x_var'] = all_data.FD_initial#/all_data.carbon_species
-all_data['y_var'] = all_data.Biomass_reldel_maxbio#/all_data.DOC_initial
-sns.scatterplot(x = 'x_var', y = 'y_var', hue = 'carbon_species', data = all_data)
-plt.yscale("log")
+all_data['x_var'] = all_data.S_initial*all_data.activity*all_data.DOC_initial
+all_data['y_var'] = all_data.Biomass_reldel_maxbio
+all_data['hue_var'] = 10**(all_data.FD_initial)
+sns.scatterplot(x = 'x_var', y = 'y_var', hue = 'hue_var', size = 'hue_var', data = all_data)
 plt.xscale("log")
-#plt.ylim((-500,500))
 #%%
-sns.scatterplot('carbon_species', 'NOSC_initial', hue = 'Seed', data = all_data)
+subset = all_data[(all_data['DOC_initial']==10000)&(all_data['S_initial']<4)]
+subset['hue_var'] = subset.activity#*subset.DOC_initial*subset.S_initial
+subset['y_var'] = subset.Biomass_reldel_maxbio
+subset['x_var'] = subset.FD_initial
+sns.scatterplot(x = 'x_var', y = 'y_var', hue = 'hue_var', size = 'hue_var', data = subset)
+plt.xscale("log")
+#%%
+subset = all_data[(all_data['carbon_species']==12)]
+subset['hue_var'] = subset.activity
+subset['y_var'] = subset.Biomass_reldel_maxbio
+g = sns.FacetGrid(subset, col="DOC_initial_int", row="activity")#,hue = 'hue_var')
+g.map(sns.scatterplot,'FD_initial','y_var')
+plt.xscale("log")
+#%%
+all_data['hue_var'] = np.log10(all_data.DOC_initial/(all_data.carbon_species*all_data.biomass_species))
+all_data["size_var"] = all_data.activity
+sns.scatterplot(x = "FD_initial", y = "Biomass_reldel_maxbio", hue = "hue_var", size = "size_var",data = all_data)
+plt.xscale("log")
+#plt.yscale("log")
+#%%
+sns.boxplot('S_initial_int', 'FD_initial', data = all_data)
+plt.yscale("log")
+#%%
+sns.scatterplot('carbon_species', 'NOSC_initial', hue = "Seed",data = all_data)
 #%%
 subset = all_data[all_data.carbon_species==12]
 eqline = np.sort(subset['NOSC_initial'])
