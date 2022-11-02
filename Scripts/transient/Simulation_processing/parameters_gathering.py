@@ -22,7 +22,8 @@ def gather_paras(sim_data):
     return paras_arr
 
 ## LOAD RESULTS
-project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
 filestring = "competition_adaptation_carbon_"
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
@@ -55,7 +56,7 @@ def run_gather_params(base_list, base_list_act):
                     seed_arr_bio = np.append(seed_arr, bio_arr, axis = 1) 
                     carbon_arr = np.zeros((c_n*b_n,1))+c_n
                     seed_carbon = np.append(seed_arr_bio, carbon_arr, axis = 1)
-                    for base, act in zip(base_list, base_list_act):#zip(["b_1", "b_2", "b_3", "b_4", "b_5"], [1.0, 0.0, 0.25, 0.5, 0.75]):
+                    for base, act in zip(base_list, base_list_act):
                         act_arr = np.zeros((c_n*b_n,1))+act
                         seed_sim_arr = np.append(seed_carbon, act_arr, axis = 1)
                         if base == "b_1":
@@ -89,13 +90,13 @@ on2_para_df = run_gather_params(["b_3"], [0.25])
 on3_para_df = run_gather_params(["b_4"], [0.5])
 on4_para_df = run_gather_params(["b_5"], [0.75])
 para_df = pd.concat([base_para_df,on1_para_df, on2_para_df, on3_para_df, on4_para_df])
-func_div = para_df.groupby(['Seed', 'biomass_species', 'carbon_species', 'Sim_series', 'level_id'], as_index = False).agg({
+func_div = para_df.groupby(['Seed', 'biomass_species', 'carbon_species', 'Activity','Sim_series', 'level_id'], as_index = False).agg({
     'vmax': ['mean','median','std','skew'],
     'k':['mean','median','std','skew'],
     'm':['mean','median','std','skew'],
     'exo_enz':['mean','median','std','skew']
 }).reset_index()
 func_div.columns = func_div.columns.map('_'.join)
-func_div.rename(columns = {'Seed_':'Seed', 'carbon_species_':'carbon_species', 'biomass_species_': 'biomass_species', 'Sim_series_': 'Sim_series', 'level_id_':'level_id'}, inplace = True)
+func_div.rename(columns = {'Seed_':'Seed', 'carbon_species_':'carbon_species', 'biomass_species_': 'biomass_species', 'Activity_': 'Activity', 'Sim_series_': 'Sim_series', 'level_id_':'level_id'}, inplace = True)
 
-func_div.to_csv(os.path.join(results_dir, filestring[:-8] + "_parameters.csv"))
+func_div.to_csv(os.path.join(results_dir, sys.argv[1] + "_parameters.csv"))
