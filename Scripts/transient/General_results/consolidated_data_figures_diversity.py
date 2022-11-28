@@ -23,6 +23,8 @@ extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial
 extr_off = act_off[(act_off['DOC_initial_int']==2000.)|(act_off['DOC_initial_int']==10000.)]
 compl = compl.sort_values(by = 'active_H_c_connections')
 compl_act_off = compl[compl.activity<100]
+no_na = all_data.dropna()
+lognona = no_na.apply(lambda x: np.log10(x) if np.issubdtype(x.dtype, np.number) else x)
 #%%
 plt.figure(figsize=(8,4))
 h = sns.scatterplot(x = "Variance", y = "FD_initial", size = "carbon_species", hue = "biomass_species", data = act_full)
@@ -31,7 +33,10 @@ h.set_ylabel("Initial functional\ndiversity: Variance", fontsize = 16)
 plt.xticks(fontsize = 14)
 plt.yticks(fontsize = 14)
 plt.yscale("log")
-plt.legend(bbox_to_anchor=(1,1.1), fontsize = 14)
+leg_handles, leg_labels = h.get_legend_handles_labels()
+leg_labels[0]="#Microbial groups"
+leg_labels[7]="#Carbon groups"
+plt.legend(leg_handles, leg_labels,bbox_to_anchor=(1,1.1), fontsize = 14)
 plt.tight_layout()
 plt.savefig(os.path.join(project_dir, "imposed_func_div.png"), dpi = 300)
 #%%
@@ -41,21 +46,49 @@ plt.ylabel("Initial functional diversity: Variance")
 plt.yscale("log")
 
 #%%
-fig, axes = plt.subplots(3,1, figsize = (8,10), sharex = True)
-sns.scatterplot(x = "FD_initial", y = "FD_ratio", hue = 'DOC_initial_int', style = "Variance", data = extr_full, ax = axes[0])
-axes[0].set_ylabel("Functional diversity:\nPeak/Initial", fontsize = 16)
-sns.scatterplot(x = "FD_initial", y = "Biomass_ratio", hue = 'DOC_initial_int', style = "Variance", data = extr_full, ax = axes[1])
-axes[1].set_ylabel("Gain in biomass:\nPeak/Initial", fontsize = 16)
-sns.scatterplot(x = "FD_initial", y = "Decay_constant", hue = 'DOC_initial_int', style = "Variance", data = extr_full, ax = axes[2])
-axes[2].set_xscale("log")
-axes[2].set_xlabel("Initial functional diversity: Variance", fontsize = 16)
-axes[2].set_ylabel("Decay constant (1/day)", fontsize = 16)
-for a in axes.flatten():
+fig, axes = plt.subplots(3,2, figsize = (9,12), sharex = True,sharey='row')
+axflat=axes.flatten()
+sns.scatterplot(x = "FD_initial", y = "Biomass_ratio", hue = 'DOC_initial_int', style = "Variance", data = extr_full, ax = axflat[0])
+sns.scatterplot(x = "FD_initial", y = "Biomass_ratio", hue = 'DOC_initial_int', style = "Variance", data = extr_off, ax = axflat[1])
+for a in [0,1]:
+    axflat[a].axhline(y=1.5, c = 'red', linestyle = 'dashed')
+    axflat[a].annotate('50% increase\nin biomass', xytext=(0.1,0.5),  xycoords='data',
+            xy=(1E-10,1.5), textcoords='axes fraction',
+            arrowprops=dict(facecolor='black', shrink=0.05),
+            horizontalalignment='left', verticalalignment='top',fontsize = 12)
+axflat[0].set_ylabel("Gain in biomass:\nPeak/Initial", fontsize = 16, labelpad = 30)
+axflat[0].set_title('A1', fontsize = 16, loc='left')
+axflat[1].set_title('A2', fontsize = 16, loc='left')
+sns.scatterplot(x = "FD_initial", y = "FD_ratio", hue = 'DOC_initial_int', style = "Variance", data = extr_full, ax = axflat[2])
+sns.scatterplot(x = "FD_initial", y = "FD_ratio", hue = 'DOC_initial_int', style = "Variance", data = extr_off, ax = axflat[3])
+for a in [2,3]:
+    axflat[a].axhline(y=1., c = 'red', linestyle = 'dashed')
+    axflat[a].annotate('No change in\nfunctional\ndiversity', xytext=(0.1,0.5),  xycoords='data',
+            xy=(1E-10,1.0), textcoords='axes fraction',
+            arrowprops=dict(facecolor='black', shrink=0.05),
+            horizontalalignment='left', verticalalignment='top',fontsize = 12)
+axflat[2].set_ylabel("Functional diversity:\nPeak/Initial", fontsize = 16, labelpad = 25)
+axflat[2].set_title('B1', fontsize = 16, loc='left')
+axflat[3].set_title('B2', fontsize = 16, loc='left')
+axflat[4].set_xscale("log")
+sns.scatterplot(x = "FD_initial", y = "Decay_constant", hue = 'DOC_initial_int', style = "Variance", data = extr_full, ax = axflat[4])
+sns.scatterplot(x = "FD_initial", y = "Decay_constant", hue = 'DOC_initial_int', style = "Variance", data = extr_off, ax = axflat[5])
+axflat[4].set_xscale("log")
+axflat[4].set_title('C1', fontsize = 16, loc='left')
+axflat[5].set_title('C2', fontsize = 16, loc='left')
+axflat[4].set_xlabel("Initial functional diversity\n(Variance)", fontsize = 16)
+axflat[5].set_xlabel("Initial functional diversity\n(Variance)", fontsize = 16)
+axflat[4].set_ylabel("Decay constant\n(1/day)", fontsize = 16, labelpad = 5)
+for a in axflat:
     a.tick_params(axis='both', which='major', labelsize=14)
     a.legend().set_visible(False)
-axes[0].legend(bbox_to_anchor=(1,1), fontsize = 14)
-plt.tight_layout()
-plt.savefig(os.path.join(project_dir, "ecosystem_func_div_extr.png"), dpi = 300)
+leg_handles, leg_labels = axflat[4].get_legend_handles_labels()
+leg_labels[0]="Carbon availability"
+leg_labels[1]="Limited"
+leg_labels[2]="Abundant"
+axflat[4].legend(leg_handles[3:], leg_labels[3:], bbox_to_anchor=(-0.4,-0.7), loc = 'lower left', ncol=6,title_fontsize = 16, fontsize = 16, handleheight = 1.2, columnspacing = 1., handletextpad = 0.3, frameon = False)
+axflat[5].legend(leg_handles[:3], leg_labels[:3], bbox_to_anchor=(-1.6,-0.9), loc = 'lower left', ncol=6,title_fontsize = 16, fontsize = 16, handleheight = 1.2, columnspacing = 1., handletextpad = 0.3, frameon = False)
+plt.savefig(os.path.join(project_dir, "ecosystem_func_div_extr_full_off.png"), bbox_inches='tight',pad_inches = 0, dpi = 300)
 #%%
 fig, axes = plt.subplots(3,1, figsize = (8,14), sharex = True)
 sns.scatterplot(x = "FD_initial", y = "FD_ratio", hue = 'DOC_initial_int', style = "Variance", data = act_full, ax = axes[0])
@@ -124,6 +157,26 @@ plt.yscale("log")
 plt.xlabel("Ratio: Biomass")
 plt.ylabel("Ratio: Functional diversity (Variance)")
 plt.legend(bbox_to_anchor=(1, 1))
+#%%
+lognona['x_var'] = lognona['carbon_species']+lognona['biomass_species']+lognona['activity']
+no_na['x_var'] = no_na['carbon_species']*no_na['biomass_species']*no_na['activity']
+#%%
+sns.scatterplot('x_var', 'Biomass_ratio', hue = 'DOC_initial_int', data = lognona[lognona.activity==2])
+#%%
+sns.scatterplot('FD_initial', 'Biomass_ratio', hue = 'DOC_initial_int', data = lognona[lognona.activity==2])
+#%%
+sns.scatterplot('x_var', 'Biomass_ratio', hue = 'DOC_initial_int', data = no_na[no_na.activity==100])
+#%%
+sns.scatterplot('FD_initial', 'Biomass_ratio', hue = 'DOC_initial_int', data = no_na[no_na.activity==100])
+#%%
+sns.scatterplot('x_var', 'FD_ratio', hue = 'DOC_initial_int', data = lognona[lognona.activity==2])
+#%%
+sns.scatterplot('FD_initial', 'FD_ratio', hue = 'DOC_initial_int', data = lognona[lognona.activity==2])
+#%%
+sns.scatterplot('x_var', 'FD_ratio', hue = 'DOC_initial_int', data = no_na[no_na.activity==100])
+#%%
+sns.scatterplot('FD_initial', 'FD_ratio', hue = 'DOC_initial_int', data = no_na[no_na.activity==100])
+
 #%%
 ## Predicting decay constant
 g = sns.FacetGrid(all_data, row="Variance", col="activity",hue = 'DOC_initial_int', palette = "magma")

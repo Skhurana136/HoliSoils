@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy
 
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
 ## LOAD RESULTS
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_diversity_parameters.csv"))
@@ -33,25 +36,139 @@ mask = np.triu(np.ones_like(corr, dtype=bool))
 sns.heatmap(corr, vmin = -1, vmax = 1, center = 0, mask = mask, cmap='vlag')
 #Limited linear relationships
 #%%
+#Check FD_initial distribution for each group of Shannon diversity: Is it same or differentt?
+fd_1_4 = act_full[act_full.S_initial_int==1.4]['FD_initial'].values
+fd_2_1 = act_full[act_full.S_initial_int==2.1]['FD_initial'].values
+fd_2_5 = act_full[act_full.S_initial_int==2.5]['FD_initial'].values
+fd_2_8 = act_full[act_full.S_initial_int==2.8]['FD_initial'].values
+fd_3_0 = act_full[act_full.S_initial_int==3.0]['FD_initial'].values
+fd_3_2 = act_full[act_full.S_initial_int==3.2]['FD_initial'].values
+fd_3_3 = act_full[act_full.S_initial_int==3.3]['FD_initial'].values
+fd_3_5 = act_full[act_full.S_initial_int==3.5]['FD_initial'].values
+#%%
+#Test for assumptions
+#Test for normality
+for dataset in [fd_1_4, fd_2_1, fd_2_5,fd_2_8,fd_3_0, fd_3_2, fd_3_3, fd_3_5]:
+    print(scipy.stats.shapiro(dataset))
+#data is not normal
+#Test for variance
+print(scipy.stats.bartlett(fd_1_4, fd_2_1, fd_2_5,fd_2_8,fd_3_0, fd_3_2, fd_3_3, fd_3_5))
+#Variance is not same
+#Assumptions to run factorial ANOVA are not met
+#%%
+for dataset in [fd_1_4, fd_2_1, fd_2_5,fd_2_8,fd_3_0, fd_3_2, fd_3_3, fd_3_5]:
+    print(np.mean(dataset)/np.median(dataset))
+#%%
+for dataset in [fd_1_4, fd_2_1, fd_2_5,fd_2_8,fd_3_0, fd_3_2, fd_3_3, fd_3_5]:
+    print(np.min(dataset),np.max(dataset))
+#%%
+kruskal = scipy.stats.kruskal(fd_1_4, fd_2_1, fd_2_5,fd_2_8,fd_3_0, fd_3_2, fd_3_3, fd_3_5)
+#statistically different distributions
+#%%
+model = smf.ols('FD_initial ~ C(carbon_species) + C(biomass_species) + C(carbon_species):C(biomass_species)', data=act_full).fit()
+sm.stats.anova_lm(model, typ=2)
+#statistically different groups
+#%%
+bio_1_4 = act_full[act_full.biomass_species==4]['FD_initial'].values
+bio_2_1 = act_full[act_full.biomass_species==8]['FD_initial'].values
+bio_2_5 = act_full[act_full.biomass_species==12]['FD_initial'].values
+bio_2_8 = act_full[act_full.biomass_species==16]['FD_initial'].values
+bio_3_0 = act_full[act_full.biomass_species==20]['FD_initial'].values
+bio_3_2 = act_full[act_full.biomass_species==24]['FD_initial'].values
+bio_3_3 = act_full[act_full.biomass_species==28]['FD_initial'].values
+bio_3_5 = act_full[act_full.biomass_species==32]['FD_initial'].values
+#Test for assumptions
+#Test for normality
+for dataset in [bio_1_4, bio_2_1, bio_2_5,bio_2_8,bio_3_0, bio_3_2, bio_3_3, bio_3_5]:
+    print(scipy.stats.shapiro(dataset))
+#Data is not normal
+#Test for variance
+print(scipy.stats.bartlett(fd_1_4, fd_2_1, fd_2_5,fd_2_8,fd_3_0, fd_3_2, fd_3_3, fd_3_5))
+#Variance is not the same
+#Assumptions to run factorial ANOVA are met
+for dataset in [bio_1_4, bio_2_1, bio_2_5,bio_2_8,bio_3_0, bio_3_2, bio_3_3, bio_3_5]:
+    print(np.mean(dataset))
+kruskal = scipy.stats.kruskal(bio_1_4, bio_2_1, bio_2_5,bio_2_8,bio_3_0, bio_3_2, bio_3_3, bio_3_5)
+print(kruskal)
+#statistically different distributions
+#%%
+model = smf.ols('FD_initial ~ C(carbon_species) + C(biomass_species) + C(carbon_species):C(biomass_species)', data=act_full).fit()
+sm.stats.anova_lm(model, typ=2)
+#%%
+#%%
+bio_1_4 = act_full[act_full.biomass_species==4]['Decay_constant'].values
+bio_2_1 = act_full[act_full.biomass_species==8]['Decay_constant'].values
+bio_2_5 = act_full[act_full.biomass_species==12]['Decay_constant'].values
+bio_2_8 = act_full[act_full.biomass_species==16]['Decay_constant'].values
+bio_3_0 = act_full[act_full.biomass_species==20]['Decay_constant'].values
+bio_3_2 = act_full[act_full.biomass_species==24]['Decay_constant'].values
+bio_3_3 = act_full[act_full.biomass_species==28]['Decay_constant'].values
+bio_3_5 = act_full[act_full.biomass_species==32]['Decay_constant'].values
+#Test for assumptions
+#Test for normality
+for dataset in [bio_1_4, bio_2_1, bio_2_5,bio_2_8,bio_3_0, bio_3_2, bio_3_3, bio_3_5]:
+    print(scipy.stats.shapiro(dataset))
+#all datasets are not normal
+#Test for variance
+print(scipy.stats.bartlett(bio_1_4, bio_2_1, bio_2_5,bio_2_8,bio_3_0, bio_3_2, bio_3_3, bio_3_5))
+#Result: NA
+#Assumptions to run factorial ANOVA are not met
+
+kruskal = scipy.stats.kruskal(bio_1_4, bio_2_1, bio_2_5,bio_2_8,bio_3_0, bio_3_2, bio_3_3, bio_3_5, nan_policy = 'omit')
+print(kruskal)
+#pvalue is greater than 0.05, so the decay constant is not different for each microbial group
+#%%
+var_0_01 = act_full[act_full.Variance==0.01]['Decay_constant'].values
+var_0_1 = act_full[act_full.Variance==0.1]['Decay_constant'].values
+var_0_5 = act_full[act_full.Variance==0.5]['Decay_constant'].values
+var_1_0 = act_full[act_full.Variance==1.]['Decay_constant'].values
+var_1_5 = act_full[act_full.Variance==1.5]['Decay_constant'].values
+#Test for assumptions
+#Test for normality
+for dataset in [var_0_01, var_0_1, var_0_5, var_1_0, var_1_5]:
+    print(scipy.stats.shapiro(dataset))
+#all datasets are not normal
+#Test for variance
+print(scipy.stats.bartlett(var_0_01, var_0_1, var_0_5, var_1_0, var_1_5))
+#Result: NA
+#Assumptions to run factorial ANOVA are not met
+kruskal = scipy.stats.kruskal(var_0_01, var_0_1, var_0_5, var_1_0, var_1_5, nan_policy = 'omit')
+print(kruskal)
+#pvalue is less than 0.05, so the decay constant is different for community type
+#%%
+
+doc_1k = act_full[act_full.DOC_initial_int==1000]['Decay_constant'].values
+doc_2k = act_full[act_full.DOC_initial_int==2000]['Decay_constant'].values
+doc_5k = act_full[act_full.DOC_initial_int==5000]['Decay_constant'].values
+doc_10k = act_full[act_full.DOC_initial_int==10000]['Decay_constant'].values
+doc_15k = act_full[act_full.DOC_initial_int==15000]['Decay_constant'].values
+#Test for assumptions
+#Test for normality
+for dataset in [doc_1k, doc_2k,doc_5k,doc_10k, doc_15k]:
+    print(scipy.stats.shapiro(dataset))
+#all datasets are not normal
+#Test for variance
+print(scipy.stats.bartlett(doc_1k, doc_2k,doc_5k,doc_10k, doc_15k))
+#Result: NA
+#Assumptions to run factorial ANOVA are not met
+kruskal = scipy.stats.kruskal(doc_1k, doc_2k,doc_5k,doc_10k, doc_15k, nan_policy = 'omit')
+print(kruskal)
+#pvalue is less than 0.05, so the decay constant is different for carbon availability
+
+#%%
 subset = act_full[act_full.biomass_species <12]
 g = sns.displot(data= act_full, x = "Decay_constant", hue = "DOC_initial_int", row = "carbon_species", col = "biomass_species", kind = 'kde')
 g.set(xscale="log")
-#%%
+
 #%%
 subset = act_full[act_full.biomass_species <8]
 g = sns.jointplot(data= subset, x = "FD_initial", y = "Decay_constant", hue = "DOC_initial_int")
 g.set(xscale="log")
-#%%
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
+
 #%%
 plt.figure()
 sm.qqplot(np.log10(act_full['FD_initial']), line = 's')
 plt.title("Initial functional diversity")
-#%%
-#plt.figure()
-#sm.qqplot(np.log10(act_full['Decay_constant']), line = '45')
-#plt.title("Decay constant")
 plt.figure()
 sm.qqplot(np.log10(act_full['Decay_constant']), line = 's')
 plt.title("Decay constant")
@@ -67,6 +184,150 @@ print("KS test: ",scipy.stats.kstest(lognona['FD_initial'], scipy.stats.norm.cdf
 # Decay constant
 print("Shapiro test: ", scipy.stats.shapiro(lognona['Decay_constant']))
 print("KS test: ",scipy.stats.kstest(lognona['Decay_constant'], scipy.stats.norm.cdf))
+### ORDINARY LINEAR REGRESSION ###
+results_dic={}
+#%%
+fd_doc = smf.ols('Decay_constant ~ FD_initial + DOC_initial_int', lognona)
+fd_doc = fd_doc.fit()
+print(fd_doc.summary())
+results_dic.update({'fd_doc_aic': fd_doc.aic})
+#%%
+fd_docfd = smf.ols('Decay_constant ~ FD_initial + DOC_initial_int*FD_initial', lognona)
+fd_docfd = fd_docfd.fit()
+print(fd_docfd.summary())
+results_dic.update({'fd_docfd_aic': fd_docfd.aic})
+#%%
+cabvdoc = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + Variance + DOC_initial_int', lognona)
+cabvdoc = cabvdoc.fit()
+print(cabvdoc.summary())
+results_dic.update({'cabvdoc_aic': cabvdoc.aic})
+#%%
+fd_doc_docfd = smf.ols('Decay_constant ~ FD_initial + DOC_initial_int + DOC_initial_int:FD_initial', lognona)
+fd_doc_docfd = fd_doc_docfd.fit()
+print(fd_doc_docfd.summary())
+results_dic.update({'fd_doc_docfd_aic': fd_doc_docfd.aic})
+#%%
+cabvdoc_doca = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + Variance + DOC_initial_int + DOC_initial_int:activity', lognona)
+cabvdoc_doca = cabvdoc_doca.fit()
+print(cabvdoc_doca.summary())
+results_dic.update({'cabvdoc_doca_aic': cabvdoc_doca.aic})
+#%%
+cabv_doca = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + Variance + DOC_initial_int:activity', lognona)
+cabv_doca = cabv_doca.fit()
+print(cabv_doca.summary())
+results_dic.update({'cabv_doca_aic': cabv_doca.aic})
+
+#%%
+# Identify the minimum FD required for the FD_ratio>1.5
+act_full_fd_ordered = act_full.sort_values(by=['FD_ratio', 'FD_initial'])
+biomass_ratio_1 = act_full_fd_ordered.index[act_full_fd_ordered.FD_ratio>1.100000005]
+print(act_full_fd_ordered.loc[biomass_ratio_1]['FD_initial'].min())
+biomass_ratio_1_5 = act_full_fd_ordered.index[act_full_fd_ordered.FD_ratio>1.5000005]
+print(act_full_fd_ordered.loc[biomass_ratio_1_5]['FD_initial'].min())
+#%%
+# Identify the minimum FD required for the biomass_ratio>1.5 in fully active communities
+act_full_bio_ordered = act_full.sort_values(by=['Biomass_ratio', 'FD_initial'])
+biomass_ratio_1 = act_full_bio_ordered.index[act_full_bio_ordered.Biomass_ratio>1.0000005]
+print(act_full_bio_ordered.loc[biomass_ratio_1]['FD_initial'].min())
+biomass_ratio_1_5 = act_full_bio_ordered.index[act_full_bio_ordered.Biomass_ratio>1.51000005]
+print(act_full_bio_ordered.loc[biomass_ratio_1_5]['FD_initial'].min())
+#%%
+### ECOSYSTEM FUNCTIONS WITH ACTIVITY SWITCHED OFF
+### Minimum functional diversity for gain in biomass?
+act_off_bio_ordered = act_off.sort_values(by=['Biomass_ratio', 'FD_initial'])
+print(act_off_bio_ordered.head)
+# Identify the minimum FD required for the biomass_ratio>1 and ratio>1.5
+biomass_ratio_1 = act_off_bio_ordered.index[act_off_bio_ordered.Biomass_ratio>1.01000005]
+print(act_off_bio_ordered.loc[biomass_ratio_1]['FD_initial'].min())
+biomass_ratio_1_5 = act_off_bio_ordered.index[act_off_bio_ordered.Biomass_ratio>1.51000005]
+print(act_off_bio_ordered.loc[biomass_ratio_1_5]['FD_initial'].min())
+#%%
+# Identify the minimum FD required for the FD_ratio>1.5
+act_off_fd_ordered = act_off.sort_values(by=['FD_ratio', 'FD_initial'])
+biomass_ratio_1 = act_off_fd_ordered.index[act_off_fd_ordered.FD_ratio>1.100000005]
+print(act_off_fd_ordered.loc[biomass_ratio_1]['FD_initial'].min())
+biomass_ratio_1_5 = act_off_fd_ordered.index[act_off_fd_ordered.FD_ratio>1.5000005]
+print(act_off_fd_ordered.loc[biomass_ratio_1_5]['FD_initial'].min())
+
+#%%
+## PREDICTING CHANGE IN FUNCTIONAL DIVERSITY
+fd_fd_doca = smf.ols('FD_ratio ~ FD_initial + DOC_initial_int', lognona)
+fd_fd_doca = fd_fd_doca.fit()
+print(fd_fd_doca.summary())
+results_dic.update({'fd_fd_doca_aic': fd_fd_doca.aic})
+#%%
+y_pred = fd_fd_doca.predict(lognona[['FD_initial', 'DOC_initial_int']])
+sns.scatterplot(x=lognona.FD_initial+lognona.DOC_initial_int, y = lognona.FD_ratio, alpha = 0.3, data = lognona)
+sns.scatterplot(x=lognona.FD_initial+lognona.DOC_initial_int,y = y_pred, color = 'red', data = lognona )
+#%%
+subset = lognona[lognona.activity==2]
+full_cabv_docgroup = smf.mixedlm('FD_ratio ~ FD_initial + DOC_initial_int', subset, groups = subset['Variance'], re_formula='~DOC_initial_int')
+full_cabv_docgroup = full_cabv_docgroup.fit(reml=False)
+print(full_cabv_docgroup.summary())
+
+#%%
+fd_cabd = smf.ols('FD_ratio ~ carbon_species + biomass_species + activity + DOC_initial_int', lognona)
+fd_cabd = fd_cabd.fit()
+print(fd_cabd.summary())
+results_dic.update({'fd_cabd_aic': fd_cabd.aic})
+#%%
+bio_fd_doc_nolog = smf.ols('Biomass_ratio ~ FD_initial + DOC_initial_int', lognona)
+bio_fd_doc_nolog = bio_fd_doc_nolog.fit()
+print(bio_fd_doc_nolog.summary())
+results_dic.update({'bio_fd_doc_nolog_aic': bio_fd_doc_nolog.aic})
+#%%
+bio_cabd = smf.ols('Biomass_ratio ~ carbon_species + biomass_species + activity + DOC_initial_int', lognona)
+bio_cabd = bio_cabd.fit()
+print(bio_cabd.summary())
+results_dic.update({'bio_cabd_aic': bio_cabd.aic})
+#%%
+bio_cabd = smf.ols('Biomass_ratio ~ carbon_species + biomass_species + activity + DOC_initial_int', no_na)
+bio_cabd = bio_cabd.fit()
+print(bio_cabd.summary())
+results_dic.update({'bio_cabd_aic': bio_cabd.aic})
+#%%
+#%%
+fd_fd_doc = smf.ols('FD_ratio ~ FD_initial + DOC_initial_int', lognona)
+fd_fd_doc = fd_fd_doc.fit()
+print(fd_fd_doc.summary())
+results_dic.update({'fd_fd_doc_aic': fd_fd_doc.aic})
+### OLD REGRESSION AND MACHINE LEARNING ATTEMPTS
+#%%
+fd = smf.ols('Decay_constant ~ FD_initial', lognona)
+fd = fd.fit()
+print(fd.summary())
+results_dic.update({'fd_aic': fd.aic})
+#%%
+doc = smf.ols('Decay_constant ~ DOC_initial_int', lognona)
+doc = doc.fit()
+print(doc.summary())
+results_dic.update({'doc_aic': doc.aic})
+#%%
+cabdoc_docv = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int + DOC_initial_int:Variance', lognona)
+cabdoc_docv = cabdoc_docv.fit()
+print(cabdoc_docv.summary())
+results_dic.update({'cabdoc_docv_aic': cabdoc_docv.aic})
+#%%
+cab_docv = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int:Variance', lognona)
+cab_docv = cab_docv.fit()
+print(cab_docv.summary())
+results_dic.update({'cab_docv_aic': cab_docv.aic})
+#%%
+cab_doca = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int:activity', lognona)
+cab_doca = cab_doca.fit()
+print(cab_doca.summary())
+results_dic.update({'cab_doca_aic': cab_doca.aic})
+#%%
+cabdoc = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int', lognona)
+cabdoc = cabdoc.fit()
+print(cabdoc.summary())
+results_dic.update({'cabdoc_aic': cabdoc.aic})
+#%%
+cabdoc_doccab = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int + DOC_initial_int:(activity+carbon_species+biomass_species)', lognona)
+cabdoc_doccab = cabdoc_doccab.fit()
+print(cabdoc_doccab.summary())
+results_dic.update({'cabdoc_doccab_aic': cabdoc_doccab.aic})
+
 #%%
 ### Linear Mixed Effects Models ###
 results_dic = {}
@@ -205,73 +466,6 @@ fd_docslopefd = fd_docslopefd.fit(reml=False)
 print(fd_docslopefd.summary())
 results_dic.update({'fd_docslopefd_aic': fd_docslopefd.aic})
 
-### ORDINARY LINEAR REGRESSION ###
-#%%
-fd = smf.ols('Decay_constant ~ FD_initial', lognona)
-fd = fd.fit()
-print(fd.summary())
-results_dic.update({'fd_aic': fd.aic})
-#%%
-fd_doc = smf.ols('Decay_constant ~ FD_initial + DOC_initial_int', lognona)
-fd_doc = fd_doc.fit()
-print(fd_doc.summary())
-results_dic.update({'fd_doc_aic': fd_doc.aic})
-#%%
-doc = smf.ols('Decay_constant ~ DOC_initial_int', lognona)
-doc = doc.fit()
-print(doc.summary())
-results_dic.update({'doc_aic': doc.aic})
-#%%
-fd_docfd = smf.ols('Decay_constant ~ FD_initial + DOC_initial_int:FD_initial', lognona)
-fd_docfd = fd_docfd.fit()
-print(fd_docfd.summary())
-results_dic.update({'fd_docfd_aic': fd_docfd.aic})
-#%%
-fd_doc_docfd = smf.ols('Decay_constant ~ FD_initial + DOC_initial_int + DOC_initial_int:FD_initial', lognona)
-fd_doc_docfd = fd_doc_docfd.fit()
-print(fd_doc_docfd.summary())
-results_dic.update({'fd_doc_docfd_aic': fd_doc_docfd.aic})
-#%%
-#%%
-cabvdoc = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + Variance + DOC_initial_int', lognona)
-cabvdoc = cabvdoc.fit()
-print(cabvdoc.summary())
-results_dic.update({'cabvdoc_aic': cabvdoc.aic})
-#%%
-cabv_doca = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + Variance + DOC_initial_int:activity', lognona)
-cabv_doca = cabv_doca.fit()
-print(cabv_doca.summary())
-results_dic.update({'cabv_doca_aic': cabv_doca.aic})
-#%%
-cabvdoc_doca = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + Variance + DOC_initial_int + DOC_initial_int:activity', lognona)
-cabvdoc_doca = cabvdoc_doca.fit()
-print(cabvdoc_doca.summary())
-results_dic.update({'cabvdoc_doca_aic': cabvdoc_doca.aic})
-#%%
-cabdoc_docv = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int + DOC_initial_int:Variance', lognona)
-cabdoc_docv = cabdoc_docv.fit()
-print(cabdoc_docv.summary())
-results_dic.update({'cabdoc_docv_aic': cabdoc_docv.aic})
-#%%
-cab_docv = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int:Variance', lognona)
-cab_docv = cab_docv.fit()
-print(cab_docv.summary())
-results_dic.update({'cab_docv_aic': cab_docv.aic})
-#%%
-cab_doca = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int:activity', lognona)
-cab_doca = cab_doca.fit()
-print(cab_doca.summary())
-results_dic.update({'cab_doca_aic': cab_doca.aic})
-#%%
-cabdoc = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int', lognona)
-cabdoc = cabdoc.fit()
-print(cabdoc.summary())
-results_dic.update({'cabdoc_aic': cabdoc.aic})
-#%%
-cabdoc_doccab = smf.ols('Decay_constant ~ carbon_species + biomass_species + activity + DOC_initial_int + DOC_initial_int:(activity+carbon_species+biomass_species)', lognona)
-cabdoc_doccab = cabdoc_doccab.fit()
-print(cabdoc_doccab.summary())
-results_dic.update({'cabdoc_doccab_aic': cabdoc_doccab.aic})
 #%%
 ### Does Carbon amplify the effect of Variance? Are they interacting?
 cab_docgroup_vinter = smf.mixedlm('Decay_constant ~ carbon_species + biomass_species + activity', lognona, groups = lognona['DOC_initial_int'], re_formula = "~Variance")
