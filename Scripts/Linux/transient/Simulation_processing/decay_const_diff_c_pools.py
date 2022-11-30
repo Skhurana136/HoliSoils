@@ -79,7 +79,6 @@ for c_n in cn_list:
                         t10_base = t10
                         all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":base_case, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool, "T_10": t10, "T10_base":t10_base}
                         dictionary_iter+=1
-                    print("one loop executed successfully")
                 for baseline in ["b_2", "b_3", "b_4","b_5"]:
                     for label in ["a", "b", "c","d","e"]:
                         sim = baseline + "_" + label + "_"
