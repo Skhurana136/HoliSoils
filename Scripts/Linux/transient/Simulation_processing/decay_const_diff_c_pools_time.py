@@ -70,7 +70,7 @@ for c_n in cn_list:
     c_b_row = []
     results_filename = os.path.join(results_dir, filestring + str(c_n))
 
-    for seed_sim in seed_sim_list[:1]:
+    for seed_sim in seed_sim_list:
         # Load all datasets and save their Shannon and diversity indices in a dataframe
         seed_all = 'seed_'+str(seed_sim)
         
