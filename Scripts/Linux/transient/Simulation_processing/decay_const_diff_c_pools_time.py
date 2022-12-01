@@ -48,7 +48,7 @@ def derive_t_loss(sim_data, loss_criteria):
     t10_c_less_0 = np.argwhere(np.round_(C_less_0/C_less_0_i, decimals = 2)==loss_criteria[0])
     if t10_c_less_0.size > 0:
         t10_c_less_0_val = t10_c_less_0[0][0]
-        t20_c_less_0_i = DOC[t10_c_less_0]
+        t20_c_less_0_i = DOC[t10_c_less_0_val]
         t20_c_less_0 = np.argwhere(np.round_(DOC[t10_c_less_0_val:]/t20_c_less_0_i, decimals = 2)==loss_criteria[0])
         if t20_c_less_0.size>0:
             t20_c_less_0_val = t20_c_less_0[0][0]
@@ -92,7 +92,7 @@ def derive_t_loss(sim_data, loss_criteria):
     t10_c_gr_0 = np.argwhere(np.round_(C_gr_0/C_gr_0_i, decimals = 2)==loss_criteria[0])
     if t10_c_gr_0.size > 0:
         t10_c_gr_0_val = t10_c_gr_0[0][0]
-        t20_c_gr_0_i = DOC[t10_c_gr_0]
+        t20_c_gr_0_i = DOC[t10_c_gr_0_val]
         t20_c_gr_0 = np.argwhere(np.round_(DOC[t10_c_gr_0_val:]/t20_c_gr_0_i, decimals = 2)==loss_criteria[0])
         if t20_c_gr_0.size>0:
             t20_c_gr_0_val = t20_c_gr_0[0][0]
@@ -111,12 +111,12 @@ def derive_t_loss(sim_data, loss_criteria):
         t30_c_gr_0_val="NA"
 
     results_list = [t10_doc_val,t10_c_less_0_val,t10_c_eq_0_val,t10_c_gr_0_val,t20_doc_val,t20_c_less_0_val,t20_c_eq_0_val,t20_c_gr_0_val,t30_doc_val,t30_c_less_0_val,t30_c_eq_0_val,t30_c_gr_0_val]
-    
+    print(results_list)
     return (results_list)
 
 ## LOAD RESULTS
-#project_dir = os.path.join("D:\Projects", "HoliSoils","data","transient", sys.argv[1])
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
+project_dir = os.path.join("D:\Projects", "HoliSoils","data","transient", sys.argv[1])
+#project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
 filestring =  'competition_adaptation_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
