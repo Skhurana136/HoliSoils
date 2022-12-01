@@ -134,7 +134,7 @@ result_fstring = "_loss_temporal"
 
 all_results_dictionary={}
 dictionary_iter = 0
-for c_n in cn_list[:1]:
+for c_n in cn_list:
     row = []
     c_b_row = []
     results_filename = os.path.join(results_dir, filestring + str(c_n))
@@ -150,8 +150,8 @@ for c_n in cn_list[:1]:
         filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
         seed_details = pd.read_pickle(filename)
 
-        for b_n in bio_n_series[:1]:
-            for t_dom_initial in init_dom_list[:1]:
+        for b_n in bio_n_series:
+            for t_dom_initial in init_dom_list:
                 base_case = "b_1_all_"
                 c_b = "bio_n_"+ str(b_n)
                 dom_init = "dom_initial_" + str(t_dom_initial)
