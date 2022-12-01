@@ -22,56 +22,95 @@ def derive_t_loss(sim_data, loss_criteria):
     C_less_0_i = np.sum(carbon_initial[c_os_less_0])
     C_eq_0_i = np.sum(carbon_initial[c_os_eq_0])
     C_gr_0_i = np.sum(carbon_initial[c_os_gr_0])
-    #Time taken for each C pool to be 90% of initial value
+    
+    #DOC:
     t10_doc = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==loss_criteria[0])
+    if t10_doc.size > 0:
+        t10_doc_val = t10_doc[0][0]
+        t20_doc_i = DOC[t10_doc_val]
+        t20_doc = np.argwhere(np.round_(DOC[t10_doc_val:]/t20_doc_i, decimals = 2)==loss_criteria[0])
+        if t20_doc.size>0:
+            t20_doc_val = t20_doc[0][0]
+            t30_doc_i = DOC[(t10_doc_val+t20_doc_val)]
+            t30_doc = np.argwhere(np.round_(DOC[(t10_doc_val+t20_doc_val):]/t30_doc_i, decimals = 2)==loss_criteria[0])
+            if t30_doc.size>0:
+                t30_doc_val = t30_doc[0][0]
+            else:
+                t30_doc_val="NA"
+        else:
+            t20_doc_val="NA"
+            t30_doc_val="NA"            
+    else:
+        t10_doc_val="NA"
+        t20_doc_val="NA"
+        t30_doc_val="NA"
+    #reduced C:
     t10_c_less_0 = np.argwhere(np.round_(C_less_0/C_less_0_i, decimals = 2)==loss_criteria[0])
-    t10_c_eq_0 = np.argwhere(np.round_(C_eq_0/C_eq_0_i, decimals = 2)==loss_criteria[0])
+    if t10_c_less_0.size > 0:
+        t10_c_less_0_val = t10_c_less_0[0][0]
+        t20_c_less_0_i = DOC[t10_c_less_0]
+        t20_c_less_0 = np.argwhere(np.round_(DOC[t10_c_less_0_val:]/t20_c_less_0_i, decimals = 2)==loss_criteria[0])
+        if t20_c_less_0.size>0:
+            t20_c_less_0_val = t20_c_less_0[0][0]
+            t30_c_less_0_i = DOC[(t10_c_less_0_val+t20_c_less_0_val)]
+            t30_c_less_0 = np.argwhere(np.round_(DOC[(t10_c_less_0_val+t20_c_less_0_val):]/t30_c_less_0_i, decimals = 2)==loss_criteria[0])
+            if t30_c_less_0.size>0:
+                t30_c_less_0_val = t30_c_less_0[0][0]
+            else:
+                t30_c_less_0_val="NA"
+        else:
+            t20_c_less_0_val="NA"
+            t30_c_less_0_val="NA"            
+    else:
+        t10_c_less_0_val="NA"
+        t20_c_less_0_val="NA"
+        t30_c_less_0_val="NA"
+    
+    #necromass:
+    #t10_c_eq_0 = np.argwhere(np.round_(C_eq_0/C_eq_0_i, decimals = 2)==loss_criteria[0])
+    #if t10_c_eq_0.size > 0:
+    #    t10_c_eq_0_val = t10_c_eq_0[0][0]
+    #    t20_c_eq_0_i = DOC[t10_c_eq_0]
+    #    t20_c_eq_0 = np.argwhere(np.round_(DOC[t10_c_eq_0_val:]/t20_c_eq_0_i, decimals = 2)==loss_criteria[0])
+    #    if t20_c_eq_0.size>0:
+    #        t20_c_eq_0_val = t20_c_eq_0[0][0]
+    #        t30_c_eq_0_i = DOC[(t10_c_eq_0_val+t20_c_eq_0_val)]
+    #        t30_c_eq_0 = np.argwhere(np.round_(DOC[(t10_c_eq_0_val+t20_c_eq_0_val):]/t30_c_eq_0_i, decimals = 2)==loss_criteria[0])
+    #        if t30_c_eq_0.size>0:
+    #            t30_c_eq_0_val = t30_c_eq_0[0][0]
+    #        else:
+    #            t30_c_eq_0_val="NA"
+    #   else:
+    #       t20_c_eq_0_val="NA"
+    #        t30_c_eq_0_val="NA"            
+    #else:
+    t10_c_eq_0_val="NA"
+    t20_c_eq_0_val="NA"
+    t30_c_eq_0_val="NA"
+
+    #oxidized C:
     t10_c_gr_0 = np.argwhere(np.round_(C_gr_0/C_gr_0_i, decimals = 2)==loss_criteria[0])
+    if t10_c_gr_0.size > 0:
+        t10_c_gr_0_val = t10_c_gr_0[0][0]
+        t20_c_gr_0_i = DOC[t10_c_gr_0]
+        t20_c_gr_0 = np.argwhere(np.round_(DOC[t10_c_gr_0_val:]/t20_c_gr_0_i, decimals = 2)==loss_criteria[0])
+        if t20_c_gr_0.size>0:
+            t20_c_gr_0_val = t20_c_gr_0[0][0]
+            t30_c_gr_0_i = DOC[(t10_c_gr_0_val+t20_c_gr_0_val)]
+            t30_c_gr_0 = np.argwhere(np.round_(DOC[(t10_c_gr_0_val+t20_c_gr_0_val):]/t30_c_gr_0_i, decimals = 2)==loss_criteria[0])
+            if t30_c_gr_0.size>0:
+                t30_c_gr_0_val = t30_c_gr_0[0][0]
+            else:
+                t30_c_gr_0_val="NA"
+        else:
+            t20_c_gr_0_val="NA"
+            t30_c_gr_0_val="NA"            
+    else:
+        t10_c_gr_0_val="NA"
+        t20_c_gr_0_val="NA"
+        t30_c_gr_0_val="NA"
 
-    results_list=[]
-    for t_arr in [t10_doc, t10_c_less_0, t10_c_eq_0,t10_c_gr_0]:
-        print(t_arr.size)
-        if t_arr.size > 0:
-            t_val = t_arr[0][0]
-        else:
-            t_val = "NA"
-        results_list.append(t_val)
-    
-    t20_doc_i = DOC[results_list[0]]
-    t20_c_less_i = C_less_0_i[results_list[1]]
-    t20_c_eq_i = C_eq_0_i[results_list[2]]
-    t20_c_gr_i = C_gr_0_i[results_list[3]]
-    
-    t20_doc = np.argwhere(np.round_(DOC[results_list[0]:]/t20_doc_i, decimals = 2)==loss_criteria[0])
-    t20_c_less_0 = np.argwhere(np.round_(C_less_0[results_list[1]]/t20_c_less_i, decimals = 2)==loss_criteria[0])
-    t20_c_eq_0 = np.argwhere(np.round_(C_eq_0[results_list[2]:]/t20_c_eq_i, decimals = 2)==loss_criteria[0])
-    t20_c_gr_0 = np.argwhere(np.round_(C_gr_0[results_list[3]:]/t20_c_gr_i, decimals = 2)==loss_criteria[0])
-    
-    for t_arr in [t20_doc,t20_c_less_0,t20_c_eq_0,t20_c_gr_0]:
-        print(t_arr.size)
-        if t_arr.size > 0:
-            t_val = t_arr[0][0]
-        else:
-            t_val = "NA"
-        results_list.append(t_val)
-    
-    t30_doc_i = DOC[results_list[4]]
-    t30_c_less_i = C_less_0_i[results_list[5]]
-    t30_c_eq_i = C_eq_0_i[results_list[6]]
-    t30_c_gr_i = C_gr_0_i[results_list[7]]
-
-    t30_doc = np.argwhere(np.round_(DOC[results_list[4]:]/t30_doc_i, decimals = 2)==loss_criteria[0])
-    t30_c_less_0 = np.argwhere(np.round_(C_less_0[results_list[5]:]/t30_c_less_i, decimals = 2)==loss_criteria[0])
-    t30_c_eq_0 = np.argwhere(np.round_(C_eq_0[results_list[6]:]/t30_c_eq_i, decimals = 2)==loss_criteria[0])
-    t30_c_gr_0 = np.argwhere(np.round_(C_gr_0[results_list[7]:]/t30_c_gr_i, decimals = 2)==loss_criteria[0])
-    
-    for t_arr in [t30_doc,t30_c_less_0,t30_c_eq_0,t30_c_gr_0]:
-        print(t_arr.size)
-        if t_arr.size > 0:
-            t_val = t_arr[0][0]
-        else:
-            t_val = "NA"
-        results_list.append(t_val)
+    results_list = [t10_doc_val,t10_c_less_0_val,t10_c_eq_0_val,t10_c_gr_0_val,t20_doc_val,t20_c_less_0_val,t20_c_eq_0_val,t20_c_gr_0_val,t30_doc_val,t30_c_less_0_val,t30_c_eq_0_val,t30_c_gr_0_val]
     
     return (results_list)
 
@@ -95,7 +134,7 @@ result_fstring = "_loss_temporal"
 
 all_results_dictionary={}
 dictionary_iter = 0
-for c_n in cn_list:
+for c_n in cn_list[:1]:
     row = []
     c_b_row = []
     results_filename = os.path.join(results_dir, filestring + str(c_n))
@@ -111,8 +150,8 @@ for c_n in cn_list:
         filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
         seed_details = pd.read_pickle(filename)
 
-        for b_n in bio_n_series:
-            for t_dom_initial in init_dom_list:
+        for b_n in bio_n_series[:1]:
+            for t_dom_initial in init_dom_list[:1]:
                 base_case = "b_1_all_"
                 c_b = "bio_n_"+ str(b_n)
                 dom_init = "dom_initial_" + str(t_dom_initial)
