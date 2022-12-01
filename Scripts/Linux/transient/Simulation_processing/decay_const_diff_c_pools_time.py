@@ -27,22 +27,52 @@ def derive_t_loss(sim_data, loss_criteria):
     t10_c_less_0 = np.argwhere(np.round_(C_less_0/C_less_0_i, decimals = 2)==loss_criteria[0])
     t10_c_eq_0 = np.argwhere(np.round_(C_eq_0/C_eq_0_i, decimals = 2)==loss_criteria[0])
     t10_c_gr_0 = np.argwhere(np.round_(C_gr_0/C_gr_0_i, decimals = 2)==loss_criteria[0])
-    t20_doc = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==loss_criteria[1])
-    t20_c_less_0 = np.argwhere(np.round_(C_less_0/C_less_0_i, decimals = 2)==loss_criteria[1])
-    t20_c_eq_0 = np.argwhere(np.round_(C_eq_0/C_eq_0_i, decimals = 2)==loss_criteria[1])
-    t20_c_gr_0 = np.argwhere(np.round_(C_gr_0/C_gr_0_i, decimals = 2)==loss_criteria[1])
-    t50_doc = np.argwhere(np.round_(DOC/DOC_i, decimals = 2)==loss_criteria[2])
-    t50_c_less_0 = np.argwhere(np.round_(C_less_0/C_less_0_i, decimals = 2)==loss_criteria[2])
-    t50_c_eq_0 = np.argwhere(np.round_(C_eq_0/C_eq_0_i, decimals = 2)==loss_criteria[2])
-    t50_c_gr_0 = np.argwhere(np.round_(C_gr_0/C_gr_0_i, decimals = 2)==loss_criteria[2])
+
     results_list=[]
-    for t_arr in [t10_doc, t10_c_less_0, t10_c_eq_0,t10_c_gr_0,t20_doc,t20_c_less_0,t20_c_eq_0,t20_c_gr_0,t50_doc,t50_c_less_0,t50_c_eq_0,t50_c_gr_0]:
+    for t_arr in [t10_doc, t10_c_less_0, t10_c_eq_0,t10_c_gr_0]:
         print(t_arr.size)
         if t_arr.size > 0:
             t_val = t_arr[0][0]
         else:
             t_val = "NA"
         results_list.append(t_val)
+    
+    t20_doc_i = DOC[results_list[0]]
+    t20_c_less_i = C_less_0_i[results_list[1]]
+    t20_c_eq_i = C_eq_0_i[results_list[2]]
+    t20_c_gr_i = C_gr_0_i[results_list[3]]
+    
+    t20_doc = np.argwhere(np.round_(DOC[results_list[0]:]/t20_doc_i, decimals = 2)==loss_criteria[0])
+    t20_c_less_0 = np.argwhere(np.round_(C_less_0[results_list[1]]/t20_c_less_i, decimals = 2)==loss_criteria[0])
+    t20_c_eq_0 = np.argwhere(np.round_(C_eq_0[results_list[2]:]/t20_c_eq_i, decimals = 2)==loss_criteria[0])
+    t20_c_gr_0 = np.argwhere(np.round_(C_gr_0[results_list[3]:]/t20_c_gr_i, decimals = 2)==loss_criteria[0])
+    
+    for t_arr in [t20_doc,t20_c_less_0,t20_c_eq_0,t20_c_gr_0]:
+        print(t_arr.size)
+        if t_arr.size > 0:
+            t_val = t_arr[0][0]
+        else:
+            t_val = "NA"
+        results_list.append(t_val)
+    
+    t30_doc_i = DOC[results_list[4]]
+    t30_c_less_i = C_less_0_i[results_list[5]]
+    t30_c_eq_i = C_eq_0_i[results_list[6]]
+    t30_c_gr_i = C_gr_0_i[results_list[7]]
+
+    t30_doc = np.argwhere(np.round_(DOC[results_list[4]:]/t30_doc_i, decimals = 2)==loss_criteria[0])
+    t30_c_less_0 = np.argwhere(np.round_(C_less_0[results_list[5]:]/t30_c_less_i, decimals = 2)==loss_criteria[0])
+    t30_c_eq_0 = np.argwhere(np.round_(C_eq_0[results_list[6]:]/t30_c_eq_i, decimals = 2)==loss_criteria[0])
+    t30_c_gr_0 = np.argwhere(np.round_(C_gr_0[results_list[7]:]/t30_c_gr_i, decimals = 2)==loss_criteria[0])
+    
+    for t_arr in [t30_doc,t30_c_less_0,t30_c_eq_0,t30_c_gr_0]:
+        print(t_arr.size)
+        if t_arr.size > 0:
+            t_val = t_arr[0][0]
+        else:
+            t_val = "NA"
+        results_list.append(t_val)
+    
     return (results_list)
 
 ## LOAD RESULTS
@@ -96,11 +126,11 @@ for c_n in cn_list:
                     carbon_initial = np.asarray(init['dom'])
                     DOC_i = np.sum(carbon_initial)
                     c_loss_tim_points=derive_t_loss(sim_data, [loss_crit_1,loss_crit_2,loss_crit_3])
-                    for c_pool, t10, t20, t50 in zip(["DOC","reduced_C", "necromass", "oxidized_C"],c_loss_tim_points[:4],c_loss_tim_points[4:8],c_loss_tim_points[8:]):
+                    for c_pool, t10, t20, t30 in zip(["DOC","reduced_C", "necromass", "oxidized_C"],c_loss_tim_points[:4],c_loss_tim_points[4:8],c_loss_tim_points[8:]):
                         t10_base = t10
                         t20_base = t20
-                        t50_base = t50
-                        all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":base_case, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool, "T10": t10, "T10_base":t10_base, "T20": t20, "T20_base":t20_base,"T50": t50, "T50_base":t50_base}
+                        t30_base = t30
+                        all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":base_case, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool, "T10": t10, "T10_base":t10_base, "T20": t20, "T20_base":t20_base,"T30": t30, "T30_base":t30_base}
                         dictionary_iter+=1
                 for baseline in ["b_2", "b_3", "b_4","b_5"]:
                     for label in ["a", "b", "c","d","e"]:
@@ -112,8 +142,8 @@ for c_n in cn_list:
                             carbon_initial = np.asarray(init['dom'])
                             DOC_i = np.sum(carbon_initial)
                             c_loss_tim_points=derive_t_loss(sim_data, [loss_crit_1,loss_crit_2,loss_crit_3])
-                            for c_pool, t10, t20, t50 in zip(["DOC","reduced_C", "necromass", "oxidized_C"],c_loss_tim_points[:4],c_loss_tim_points[4:8],c_loss_tim_points[8:]):
-                                all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":sim, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool, "T10": t10, "T10_base":t10_base, "T20": t20, "T20_base":t20_base,"T50": t50, "T50_base":t50_base}
+                            for c_pool, t10, t20, t30 in zip(["DOC","reduced_C", "necromass", "oxidized_C"],c_loss_tim_points[:4],c_loss_tim_points[4:8],c_loss_tim_points[8:]):
+                                all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":sim, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool, "T10": t10, "T10_base":t10_base, "T20": t20, "T20_base":t20_base,"T30": t30, "T30_base":t30_base}
                                 dictionary_iter+=1
         hr.close()
     print(dictionary_iter)
