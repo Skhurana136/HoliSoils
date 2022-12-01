@@ -25,36 +25,35 @@ extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial
 #compl_act_off = compl[compl.activity<100]
 #no_na = all_data.dropna()
 #lognona = no_na.apply(lambda x: np.log10(x) if np.issubdtype(x.dtype, np.number) else x)
-act_full['T20_10'] = act_full.T20 - act_full.T10
-act_full['Decay_constant_20_10'] = 1/(act_full.T20_10*5)
 #%%
 ###--------------------------------------------------------
 ### COMPARISON OF DECAY CONSTANT OF DIFFERENT CARBON POOLS
 ###--------------------------------------------------------
-row_plots = ['Decay_constant_10','Decay_constant_20_10','Decay_constant_50']
+row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30']
 col_plots = ['DOC', 'reduced_C', 'oxidized_C']#'necromass',
-fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey =True, figsize = (10,8))
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey ='row', figsize = (10,8))
 ax = axes.flatten()
 for i in list(range(len(col_plots))):
-    subset = act_full[act_full.C_pool==col_plots[i]]
+    subset = act_full[act_full.C_pool==col_plots[i]].reset_index()
     for j in list(range(len(row_plots))):
         axindx = j*len(col_plots) + i
-        g=sns.scatterplot(x='FD_initial',y=row_plots[j], data = subset, hue = 'DOC_initial_int', ax=ax[axindx])
+        print(axindx,subset[row_plots[j]].shape)
+        #g=sns.scatterplot(x=subset['FD_initial'],y=subset[row_plots[j]], hue = subset['DOC_initial_int'], ax=ax[axindx])
+        ax[axindx].scatter(x=subset['FD_initial'],y=subset[row_plots[j]])#, hue = subset['DOC_initial_int'], ax=ax[axindx])
         g.legend().remove()
         ax[axindx].set_xlabel("")
 fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
 ax[0].set_title("DOC", fontsize = 14)
 ax[1].set_title("reduced C", fontsize = 14)
 ax[2].set_title("oxidized C", fontsize = 14)
-ax[0].set_ylabel("10% loss", fontsize = 14)
-ax[len(col_plots)*1].set_ylabel("20% loss", fontsize = 14)
-ax[len(col_plots)*2].set_ylabel("50% loss", fontsize = 14)
+ax[0].set_ylabel("1st\10% loss", fontsize = 14)
+ax[len(col_plots)*1].set_ylabel("2nd\n10% loss", fontsize = 14)
+ax[len(col_plots)*2].set_ylabel("3rd\n10% loss", fontsize = 14)
 plt.xscale("log")
 handles,labels=ax[axindx].get_legend_handles_labels()
 plt.figlegend(handles,labels,title = 'C availability', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
-
 #%%
-
+act_full['Decay_constant_10'].isna().sum()
 #%%
 plt.figure(figsize=(8,4))
 h = sns.scatterplot(x = "FD_initial", y = "Decay_constant_10", size = "carbon_species", hue = "biomass_species", data = act_full)
@@ -84,7 +83,7 @@ plt.legend(leg_handles, leg_labels,bbox_to_anchor=(1,1.1), fontsize = 14)
 plt.tight_layout()
 #%%
 plt.figure(figsize=(8,4))
-h = sns.scatterplot(x = "FD_initial", y = "Decay_constant_50", size = "carbon_species", hue = "biomass_species", data = act_full)
+h = sns.scatterplot(x = "FD_initial", y = "Decay_constant_30", size = "carbon_species", hue = "biomass_species", data = act_full)
 h.set_ylabel("Decay constant", fontsize = 16)
 h.set_xlabel("Initial functional\ndiversity: Variance", fontsize = 16)
 plt.xticks(fontsize = 14)
