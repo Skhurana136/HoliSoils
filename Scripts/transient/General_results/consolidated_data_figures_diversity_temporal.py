@@ -80,7 +80,41 @@ sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
 #%%
 pair_df = extr_full[extr_full.C_pool=='oxidized_C'][['Variance','DOC_initial_int','Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']]
 sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
-
+#%%
+#Derive ratio of decay constants with respect to first decay constant
+ratio_df = act_full
+ratio_df['dec_20_ratio'] = ratio_df.Decay_constant_20/ratio_df.Decay_constant_10
+ratio_df['dec_30_ratio'] = ratio_df.Decay_constant_30/ratio_df.Decay_constant_10
+ratio_df['dec_40_ratio'] = ratio_df.Decay_constant_40/ratio_df.Decay_constant_10
+ratio_df['dec_50_ratio'] = ratio_df.Decay_constant_50/ratio_df.Decay_constant_10
+ratio_df['dec_60_ratio'] = ratio_df.Decay_constant_60/ratio_df.Decay_constant_10
+#%%
+#%%
+pair_df = ratio_df[ratio_df.C_pool=='DOC'][['Variance','DOC_initial_int','Decay_constant_10','dec_20_ratio','dec_30_ratio','dec_40_ratio','dec_50_ratio','dec_60_ratio']]
+sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
+plt.xscale("log")
+#%%
+pair_df = ratio_df[ratio_df.C_pool=='reduced_C'][['Variance','DOC_initial_int','Decay_constant_10','dec_20_ratio','dec_30_ratio','dec_40_ratio','dec_50_ratio','dec_60_ratio']]
+sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
+#%%
+pair_df = ratio_df[ratio_df.C_pool=='oxidized_C'][['Variance','DOC_initial_int','Decay_constant_10','dec_20_ratio','dec_30_ratio','dec_40_ratio','dec_50_ratio','dec_60_ratio']]
+sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
+#%%
+#%%
+fig, axes = plt.subplots(6,1,sharex=True,figsize = (4,8))
+ax = axes.flatten()
+#sns.histplot(data=ratio_df, binwidth = 0.001, x = 'Decay_constant_10', hue = 'C_pool', ax = ax[0])
+sns.histplot(data=ratio_df, binwidth = 0.5, x = 'dec_20_ratio', hue = 'C_pool', ax = ax[1])
+sns.histplot(data=ratio_df, binwidth = 0.5, x = 'dec_30_ratio', hue = 'C_pool', ax = ax[2])
+sns.histplot(data=ratio_df, binwidth = 0.5, x = 'dec_40_ratio', hue = 'C_pool', ax = ax[3])
+sns.histplot(data=ratio_df, binwidth = 0.5, x = 'dec_50_ratio', hue = 'C_pool', ax = ax[4])
+sns.histplot(data=ratio_df,binwidth = 0.5, x = 'dec_60_ratio', hue = 'C_pool', ax = ax[5])
+handles,labels=ax[-1].get_legend_handles_labels()
+#plt.xscale("log")
+plt.figlegend(handles,labels,title = 'C pool', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
+plt.xlim(right=10)
+for a in ax[:]:
+    a.legend().remove()
 #%%
 plt.figure(figsize=(8,4))
 h = sns.scatterplot(x = "FD_initial", y = "Decay_constant_10", size = "carbon_species", hue = "biomass_species", data = act_full)
