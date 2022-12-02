@@ -37,9 +37,9 @@ for i in list(range(len(col_plots))):
     subset = act_full[act_full.C_pool==col_plots[i]].reset_index()
     for j in list(range(len(row_plots))):
         axindx = j*len(col_plots) + i
-        print(axindx,subset[row_plots[j]].shape)
-        #g=sns.scatterplot(x=subset['FD_initial'],y=subset[row_plots[j]], hue = subset['DOC_initial_int'], ax=ax[axindx])
-        ax[axindx].scatter(x=subset['FD_initial'],y=subset[row_plots[j]])#, hue = subset['DOC_initial_int'], ax=ax[axindx])
+        #print(axindx,subset[row_plots[j]].shape)
+        g=sns.scatterplot(x=subset['FD_initial'],y=subset[row_plots[j]], hue = subset['DOC_initial_int'], ax=ax[axindx])
+        #ax[axindx].scatter(x=subset['FD_initial'],y=subset[row_plots[j]])#, hue = subset['DOC_initial_int'], ax=ax[axindx])
         g.legend().remove()
         ax[axindx].set_xlabel("")
 fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
@@ -53,7 +53,14 @@ plt.xscale("log")
 handles,labels=ax[axindx].get_legend_handles_labels()
 plt.figlegend(handles,labels,title = 'C availability', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
 #%%
-act_full['Decay_constant_10'].isna().sum()
+sns.kdeplot(data=act_full, x = 'Decay_constant_10', hue = 'C_pool')
+plt.xscale("log")
+#%%
+sns.kdeplot(data=act_full, x = 'Decay_constant_20', hue = 'C_pool')
+plt.xscale("log")
+#%%
+sns.kdeplot(data=act_full, x = 'Decay_constant_30', hue = 'C_pool')
+plt.xscale("log")
 #%%
 plt.figure(figsize=(8,4))
 h = sns.scatterplot(x = "FD_initial", y = "Decay_constant_10", size = "carbon_species", hue = "biomass_species", data = act_full)
@@ -109,7 +116,7 @@ plt.legend(leg_handles, leg_labels,bbox_to_anchor=(1,1.1), fontsize = 14)
 plt.tight_layout()
 #%%
 plt.figure(figsize=(8,4))
-h = sns.scatterplot(x = "Decay_constant_10", y = "Decay_constant_50", size = "carbon_species", hue = "biomass_species", data = extr_full)
+h = sns.scatterplot(x = "Decay_constant_10", y = "Decay_constant_30", size = "carbon_species", hue = "biomass_species", data = extr_full)
 h.set_ylabel("Decay constant", fontsize = 16)
 #h.set_xlabel("Initial functional\ndiversity: Variance", fontsize = 16)
 plt.xticks(fontsize = 14)
