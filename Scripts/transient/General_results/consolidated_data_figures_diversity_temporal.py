@@ -29,12 +29,13 @@ extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial
 ###--------------------------------------------------------
 ### COMPARISON OF DECAY CONSTANT OF DIFFERENT CARBON POOLS
 ###--------------------------------------------------------
-row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30']
+#row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30']
+row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']
 col_plots = ['DOC', 'reduced_C', 'oxidized_C']#'necromass',
-fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey ='row', figsize = (10,8))
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey =True, figsize = (10,8))
 ax = axes.flatten()
 for i in list(range(len(col_plots))):
-    subset = act_full[act_full.C_pool==col_plots[i]].reset_index()
+    subset = extr_full[extr_full.C_pool==col_plots[i]].reset_index()
     for j in list(range(len(row_plots))):
         axindx = j*len(col_plots) + i
         #print(axindx,subset[row_plots[j]].shape)
@@ -46,21 +47,40 @@ fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
 ax[0].set_title("DOC", fontsize = 14)
 ax[1].set_title("reduced C", fontsize = 14)
 ax[2].set_title("oxidized C", fontsize = 14)
-ax[0].set_ylabel("1st\10% loss", fontsize = 14)
+ax[0].set_ylabel("1st\n10% loss", fontsize = 14)
 ax[len(col_plots)*1].set_ylabel("2nd\n10% loss", fontsize = 14)
 ax[len(col_plots)*2].set_ylabel("3rd\n10% loss", fontsize = 14)
+ax[len(col_plots)*3].set_ylabel("4th\n10% loss", fontsize = 14)
+ax[len(col_plots)*4].set_ylabel("5th\n10% loss", fontsize = 14)
+ax[len(col_plots)*5].set_ylabel("6th\n10% loss", fontsize = 14)
 plt.xscale("log")
+#plt.yscale("log")
 handles,labels=ax[axindx].get_legend_handles_labels()
 plt.figlegend(handles,labels,title = 'C availability', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
 #%%
-sns.kdeplot(data=act_full, x = 'Decay_constant_10', hue = 'C_pool')
-plt.xscale("log")
+fig, axes = plt.subplots(6,1,sharex=True,figsize = (4,8))
+ax = axes.flatten()
+sns.kdeplot(data=act_full, x = 'Decay_constant_10', hue = 'C_pool', ax = ax[0])
+sns.kdeplot(data=act_full, x = 'Decay_constant_20', hue = 'C_pool', ax = ax[1])
+sns.kdeplot(data=act_full, x = 'Decay_constant_30', hue = 'C_pool', ax = ax[2])
+sns.kdeplot(data=act_full, x = 'Decay_constant_40', hue = 'C_pool', ax = ax[3])
+sns.kdeplot(data=act_full, x = 'Decay_constant_50', hue = 'C_pool', ax = ax[4])
+sns.kdeplot(data=act_full, x = 'Decay_constant_60', hue = 'C_pool', ax = ax[5])
+handles,labels=ax[-1].get_legend_handles_labels()
+#plt.xscale("log")
+plt.figlegend(handles,labels,title = 'C pool', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
+for a in ax[:]:
+    a.legend().remove()
 #%%
-sns.kdeplot(data=act_full, x = 'Decay_constant_20', hue = 'C_pool')
-plt.xscale("log")
+pair_df = extr_full[extr_full.C_pool=='DOC'][['Variance','DOC_initial_int','Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']]
+sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
 #%%
-sns.kdeplot(data=act_full, x = 'Decay_constant_30', hue = 'C_pool')
-plt.xscale("log")
+pair_df = extr_full[extr_full.C_pool=='reduced_C'][['Variance','DOC_initial_int','Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']]
+sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
+#%%
+pair_df = extr_full[extr_full.C_pool=='oxidized_C'][['Variance','DOC_initial_int','Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']]
+sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
+
 #%%
 plt.figure(figsize=(8,4))
 h = sns.scatterplot(x = "FD_initial", y = "Decay_constant_10", size = "carbon_species", hue = "biomass_species", data = act_full)
