@@ -19,7 +19,6 @@ for c_n in cn_list:
     filename = os.path.join(results_dir, filestring + str(c_n) + "_loss_temporal_temporal_decay_const_c_pools_data.pkl")
     diversity_data = pd.read_pickle(filename)
     # Additional data processing
-    diversity_data = diversity_data.replace('NA', np.nan)
     if count == 0:
         combined_data = diversity_data
     else:
