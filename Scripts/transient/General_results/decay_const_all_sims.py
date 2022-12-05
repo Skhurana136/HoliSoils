@@ -33,8 +33,8 @@ tim_data = pd.concat(files)
 print(tim_data.columns)
 tim_data['DOC_initial_int'] = round(tim_data.DOC_initial, -3)
 
-cols_to_merge = ['Seed', 'Sim_series', 'carbon_species', 'biomass_species', 'C_pool', 'T10', 'T10_base', 'T20', 'T20_base', 'T30', 'T30_base','T40', 'T40_base', 'T50', 'T50_base', 'T60', 'T60_base', 'activity', 'Variance',  'DOC_initial_int']
-fd_tim_data = pd.merge(fd_data, tim_data[cols_to_merge], on = ["Seed", "Variance", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series", "activity"])
+#cols_to_merge = ['Seed', 'Sim_series', 'carbon_species', 'biomass_species', 'C_pool', 'T10', 'T10_base', 'T20', 'T20_base', 'T30', 'T30_base','T40', 'T40_base', 'T50', 'T50_base', 'T60', 'T60_base', 'activity', 'Variance',  'DOC_initial_int']
+fd_tim_data = pd.merge(fd_data, tim_data, on = ["Seed", "Variance", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series", "activity"])
 files = []
 for p,a in zip(sim_suffixes, sim_suffixes_var):
     filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "gen_spec_lognorm" + p + "_parameters.csv")
@@ -48,12 +48,12 @@ print(para_data.columns)
 cols_to_merge = para_data.columns.to_list()[2:]
 all_data = pd.merge(fd_tim_data, para_data[cols_to_merge], on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series"])
 all_data["active_H_c_connections"] = all_data['S_initial']*all_data['carbon_species']*all_data["activity"]/100
-all_data["Decay_constant_10"] = 1/(all_data['T10']*5).to_numpy(dtype = float)    
-all_data["Decay_constant_20"] = 1/(all_data['T20']*5).to_numpy(dtype = float)    
-all_data["Decay_constant_30"] = 1/(all_data['T30']*5).to_numpy(dtype = float)
-all_data["Decay_constant_40"] = 1/(all_data['T40']*5).to_numpy(dtype = float)    
-all_data["Decay_constant_50"] = 1/(all_data['T50']*5).to_numpy(dtype = float)    
-all_data["Decay_constant_60"] = 1/(all_data['T60']*5).to_numpy(dtype = float)
+#all_data["Decay_constant_10"] = 1/(all_data['T10']*5).to_numpy(dtype = float)    
+#all_data["Decay_constant_20"] = 1/(all_data['T20']*5).to_numpy(dtype = float)    
+#all_data["Decay_constant_30"] = 1/(all_data['T30']*5).to_numpy(dtype = float)
+#all_data["Decay_constant_40"] = 1/(all_data['T40']*5).to_numpy(dtype = float)    
+#all_data["Decay_constant_50"] = 1/(all_data['T50']*5).to_numpy(dtype = float)    
+#all_data["Decay_constant_60"] = 1/(all_data['T60']*5).to_numpy(dtype = float)
 all_data["active_H"] = all_data['S_initial']*all_data["activity"]/100
 all_data["FD_cov"]= np.sqrt(all_data.FD_initial)/all_data.vmax_mean
 init_doc_list = np.sort(list(all_data.DOC_initial_int.unique()))

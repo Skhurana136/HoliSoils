@@ -16,7 +16,12 @@ all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_temporal_dec
 print(all_data.shape)
 print(all_data.dtypes)
 #%%
-#compl = all_data.dropna(subset = ['ratio_t_50'])
+T_cols = list(x for x in all_data.columns if 'T' in x)
+
+for t_col in T_cols:
+    all_data['dec'+t_col[1:]] = 1/(all_data[t_col]*5)
+    all_data['ratio'+t_col[1:]]=all_data['dec'+t_col[1:]]/all_data['dec0']#compl = all_data.dropna(subset = ['ratio_t_50'])
+all_data.fillna(0,inplace=True)
 act_full = all_data[all_data.Sim_series=="b_1_all_"]
 #act_off = all_data[all_data.Sim_series!="b_1_all_"]
 extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial_int']==10000.)]
@@ -30,9 +35,12 @@ extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial
 ### COMPARISON OF DECAY CONSTANT OF DIFFERENT CARBON POOLS
 ###--------------------------------------------------------
 #row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30']
-row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']
+#row_plots = ['Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']
+
+#%%
+row_plots = ['ratio2', 'ratio4','ratio6', 'ratio10']
 col_plots = ['DOC', 'reduced_C', 'oxidized_C']#'necromass',
-fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey =True, figsize = (10,8))
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey =True, figsize = (10,10))
 ax = axes.flatten()
 for i in list(range(len(col_plots))):
     subset = extr_full[extr_full.C_pool==col_plots[i]].reset_index()
@@ -48,15 +56,49 @@ ax[0].set_title("DOC", fontsize = 14)
 ax[1].set_title("reduced C", fontsize = 14)
 ax[2].set_title("oxidized C", fontsize = 14)
 ax[0].set_ylabel("1st\n10% loss", fontsize = 14)
-ax[len(col_plots)*1].set_ylabel("2nd\n10% loss", fontsize = 14)
-ax[len(col_plots)*2].set_ylabel("3rd\n10% loss", fontsize = 14)
-ax[len(col_plots)*3].set_ylabel("4th\n10% loss", fontsize = 14)
-ax[len(col_plots)*4].set_ylabel("5th\n10% loss", fontsize = 14)
-ax[len(col_plots)*5].set_ylabel("6th\n10% loss", fontsize = 14)
+#ax[len(col_plots)*1].set_ylabel("2nd\n10% loss", fontsize = 14)
+#ax[len(col_plots)*2].set_ylabel("3rd\n10% loss", fontsize = 14)
+#ax[len(col_plots)*3].set_ylabel("4th\n10% loss", fontsize = 14)
+#ax[len(col_plots)*4].set_ylabel("5th\n10% loss", fontsize = 14)
+#ax[len(col_plots)*5].set_ylabel("6th\n10% loss", fontsize = 14)
 plt.xscale("log")
+plt.ylim(top=1)#scale("log")
+handles,labels=ax[axindx].get_legend_handles_labels()
+plt.figlegend(handles,labels,title = 'C availability', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
+#%%
+row_plots = ['dec15']
+col_plots = ['DOC', 'reduced_C', 'oxidized_C']#'necromass',
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True,sharey =True, figsize = (10,4))
+ax = axes.flatten()
+for i in list(range(len(col_plots))):
+    subset = extr_full[extr_full.C_pool==col_plots[i]].reset_index()
+    for j in list(range(len(row_plots))):
+        axindx = j*len(col_plots) + i
+        #print(axindx,subset[row_plots[j]].shape)
+        g=sns.scatterplot(x=subset['FD_initial'],y=subset[row_plots[j]], hue = subset['DOC_initial_int'], ax=ax[axindx])
+        #ax[axindx].scatter(x=subset['FD_initial'],y=subset[row_plots[j]])#, hue = subset['DOC_initial_int'], ax=ax[axindx])
+        g.legend().remove()
+        ax[axindx].set_xlabel("")
+fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
+ax[0].set_title("DOC", fontsize = 14)
+ax[1].set_title("reduced C", fontsize = 14)
+ax[2].set_title("oxidized C", fontsize = 14)
+ax[0].set_ylabel("1st\n10% loss", fontsize = 14)
+#ax[len(col_plots)*1].set_ylabel("2nd\n10% loss", fontsize = 14)
+#ax[len(col_plots)*2].set_ylabel("3rd\n10% loss", fontsize = 14)
+#ax[len(col_plots)*3].set_ylabel("4th\n10% loss", fontsize = 14)
+#ax[len(col_plots)*4].set_ylabel("5th\n10% loss", fontsize = 14)
+#ax[len(col_plots)*5].set_ylabel("6th\n10% loss", fontsize = 14)
+plt.xscale("log")
+plt.ylim(bottom=-0.001)
+for a in ax[:]:
+    a.axhline(y=0.0, c='maroon', linestyle='dashed')
 #plt.yscale("log")
 handles,labels=ax[axindx].get_legend_handles_labels()
 plt.figlegend(handles,labels,title = 'C availability', fontsize = 12, title_fontsize = 12, bbox_to_anchor=(0.85,-0.1), ncol=5, loc = "lower right", borderpad=0.)
+
+#%%
+
 #%%
 fig, axes = plt.subplots(6,1,sharex=True,figsize = (4,8))
 ax = axes.flatten()
