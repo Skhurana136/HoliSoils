@@ -30,7 +30,7 @@ def derive_t_loss(sim_data, tim_points_num, loss_criteria):
                     c_tim_series = c_tim_series[t_c[0][0]:]
                     c_tim_series_i = c_tim_series[0]
                 else:
-                    results_arr[c_idx, tim:] = np.nan
+                    results_arr[c_idx, tim:] = 0.#np.nan
                     break
         else:
             pass
@@ -50,6 +50,7 @@ ip = 0
 init_dom_list = [1000,2000,5000,10000,15000]
 transient_switch = 0
 input_factor = transient_switch*5/365
+num_tim_points=40
 loss_crit_1 = 0.9
 loss_crit_2 = 0.8
 loss_crit_3 = 0.5
@@ -87,7 +88,6 @@ for c_n in cn_list:
                     dom_n, bio_n = sim_data['species_number']
                     carbon_initial = np.asarray(init['dom'])
                     DOC_i = np.sum(carbon_initial)
-                    num_tim_points=15
                     c_loss_tim_points=derive_t_loss(sim_data, num_tim_points, [loss_crit_1,loss_crit_2,loss_crit_3])
                     print(c_loss_tim_points)
                     for c_pool, i in zip(["DOC","reduced_C", "necromass", "oxidized_C"], list(range(4))):
