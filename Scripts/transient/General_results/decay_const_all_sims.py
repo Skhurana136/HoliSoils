@@ -23,7 +23,7 @@ fd_data['DOC_initial_int'] = round(fd_data.DOC_initial, -3)
 ### CHARACTERISTIC REACTION TIME SCALE
 files = []
 for p,a in zip(sim_suffixes, sim_suffixes_var):
-    filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "competition_adaptation_carbon_loss_temporal_temporal_decay_const_c_pools_combined_dataset.pkl")
+    filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "competition_adaptation_carbon_loss_temporal_temporal_decay_const_c_pools_initial_conditions_combined_dataset.pkl")
     data = pd.read_pickle(filename)
     var_arr = np.zeros((data.shape[0],))+a
     var_ser = pd.Series(var_arr, copy=False,name = "Variance")
@@ -78,4 +78,4 @@ all_data['FD_ratio'] = all_data.FD_maxbio/all_data.FD_initial
 all_data['Biomass_ratio'] = all_data.Biomass_maxbio/all_data.Biomass_initial
 all_data["FD_initial_ratio"] = all_data.FD_initial/all_data.FD_initial_base                    
 all_data["FD_cov_ratio"] = all_data.FD_cov/all_data.FD_cov_base
-all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_decay_const.csv"),index=False)
+all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_iniitial_conditions_decay_const.csv"),index=False)

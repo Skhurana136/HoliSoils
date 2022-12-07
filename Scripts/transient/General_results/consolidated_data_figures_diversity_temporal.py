@@ -6,10 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import matplotlib.lines as mlines
-
-from scipy.optimize import curve_fit
-
 ## LOAD RESULTS
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_temporal_decay_const.csv"))
@@ -24,26 +20,35 @@ docs = all_data.DOC_initial_int.unique().tolist()
 sims = all_data.Sim_series.unique().tolist()
 variances=all_data.Variance.unique().tolist()
 T_cols = list(x for x in all_data.columns if 'T' in x)
+old_t = 'T0'
 for t_col in T_cols:
-    all_data['dec'+t_col[1:]] = 1/(all_data[t_col]*5)
+    if t_col == 'T0':
+        all_data['dec0'] = 1/(all_data['T0']*5)
+    else:
+        #all_data['dec'+t_col[1:]] = 1/(all_data[t_col]*5) #execute when all calcs are for subsequent calcs
+        all_data['T_diff'+t_col[1:]] = abs((all_data[t_col]-all_data[old_t])) #execute when all calcs are wrt initial conditions
+        all_data['dec'+t_col[1:]] = 1/(all_data['T_diff'+t_col[1:]]*5) #execute when all calcs are wrt initial conditions
     all_data['dec_ratio'+t_col[1:]]=all_data['dec'+t_col[1:]]/all_data['dec0']#compl = all_data.dropna(subset = ['ratio_t_50'])
+    old_t = t_col
 all_data.replace([np.inf, -np.inf, np.nan], 0, inplace=True)
+dec_ratio_columns = list(x for x in all_data.columns if 'dec_ratio' in x) 
+#all_data[dec_ratio_columns].clip(lower=0, inplace=True)
 act_full = all_data[all_data.Sim_series=="b_1_all_"]
 extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial_int']==10000.)]
 #%%
 ###--------------------------------------------------------
 ### COMPARISON OF DECAY CONSTANT OF DIFFERENT CARBON POOLS
 ###--------------------------------------------------------
-row_plots = ['dec0']
+row_plots = ['dec3']
 col_plots = ['DOC', 'reduced_C', 'oxidized_C']
-fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True, figsize = (10,4))
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True, sharey=True, figsize = (10,4))
 ax = axes.flatten()
 for i in list(range(len(col_plots))):
     subset = extr_full[extr_full.C_pool==col_plots[i]].reset_index()
     for j in list(range(len(row_plots))):
         axindx = j*len(col_plots) + i
         #print(axindx,subset[row_plots[j]].shape)
-        g=sns.scatterplot(x=subset['FD_initial'],y=subset[row_plots[j]], hue = subset['DOC_initial_int'], ax=ax[axindx])
+        g=sns.scatterplot(x=subset['FD_initial'],y=subset[row_plots[j]]/subset['T0'], hue = subset['DOC_initial_int'], ax=ax[axindx])
         #ax[axindx].scatter(x=subset['FD_initial'],y=subset[row_plots[j]])#, hue = subset['DOC_initial_int'], ax=ax[axindx])
         g.legend().remove()
         ax[axindx].set_xlabel("")
@@ -51,10 +56,9 @@ fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
 ax[0].set_title("DOC", fontsize = 14)
 ax[1].set_title("reduced C", fontsize = 14)
 ax[2].set_title("Necromass", fontsize = 14)
-ax[-1].set_title("oxidized C", fontsize = 14)
 ax[0].set_ylabel("Decay constant", fontsize = 14)
 plt.xscale("log")
-plt.ylim(bottom=-1)
+#plt.ylim(bottom=-1)
 for a in ax[:]:
     a.axhline(y=0.0, c='maroon', linestyle='dashed')
 handles,labels=ax[axindx].get_legend_handles_labels()
@@ -64,12 +68,13 @@ plt.figlegend(handles,labels,title = 'C availability', fontsize = 12, title_font
 ###--------------------------------------------------------
 ### COMPARISON OF DECAY CONSTANT OF DIFFERENT CARBON POOLS TEMPORALLY
 ###--------------------------------------------------------
-dec_ratio_columns = list(x for x in all_data.columns if 'dec_ratio' in x) 
-select_columns = [10,40,80,1010,400,1400]#[0,4,8,101,420,1000]
-labelist=[90.0,81.0,72.9,65.6,59.0,53.1,47.8,43.0,38.7,34.9,31.4,28.2,25.4,22.9,20.6,18.5,16.7,15.0,13.5,12.2,10.9,9.8,8.9,8.0,7.2,6.5,5.8,5.2,4.7,4.2,3.8,3.4,3.1,2.8,2.5,2.3,2.0,1.8,1.6,1.4]
-fig, axes = plt.subplots(nrows=5, ncols=4, figsize=(10,10), sharex=True,sharey='row')
+cols = ["DOC","reduced_C", "oxidized_C"]
+select_columns = np.arange(769,770)#np.random.randint(0,1440,200)#[0,4,8,50,70,101,300,420,500,711,899,1000]#[10,40,80,1010,400,1400]#[0,4,8,101,420,1000]
+#labelist=[90.0,81.0,72.9,65.6,59.0,53.1,47.8,43.0,38.7,34.9,31.4,28.2,25.4,22.9,20.6,18.5,16.7,15.0,13.5,12.2,10.9,9.8,8.9,8.0,7.2,6.5,5.8,5.2,4.7,4.2,3.8,3.4,3.1,2.8,2.5,2.3,2.0,1.8,1.6,1.4]
+labelist=[90,80,70,60,50,40,30,20,10]
+fig, axes = plt.subplots(nrows=5, ncols=len(cols), figsize=(10,10), sharex=True,sharey=True)
 for iidx, i in enumerate(docs):
-    for jidx, j in enumerate(carb_types):
+    for jidx, j in enumerate(cols):
         ax = axes[iidx][jidx]
         doc_data = act_full[(act_full['C_pool']==j)&(act_full['DOC_initial_int']==i)].reset_index()
         doc_t_data = doc_data[dec_ratio_columns].T
@@ -79,7 +84,8 @@ for iidx, i in enumerate(docs):
         if iidx==0:
             ax.set_title(j)
 labels = list(str(int(x)) for x in labelist[::8])
-plt.xticks(np.arange(0, 40, step=8), labels)
+plt.ylim(top=2)
+plt.xticks(np.arange(0, 9, step=1), labelist)
 fig.supylabel("Normalized decay constant", fontsize = 16)
 fig.supxlabel("% remaining C", fontsize = 16)
 #%%
@@ -103,14 +109,25 @@ decay_max_series = group_all_data.apply(f_argmax)
 decay_stop_series = group_all_data.apply(f_argzero)
 #%%
 def f_argmax(x):
-    dec_remaining_c = labelist[np.argmax(np.asarray(x.T))]
-    return dec_remaining_c
+    docwheremax = np.argmax(np.asarray(x.T))
+    if docwheremax.size>0:
+        dec_remaining_c = labelist[docwheremax]
+    else:
+        dec_remaining_c = 100
+        docwheremax = -1
+    return dec_remaining_c, docwheremax
 
 def f_argzero(x):
-    dec_remaining_c = labelist[np.argmin(np.asarray(x.T))]
-    return dec_remaining_c
+    docwhere0 = np.argwhere(np.asarray(x.T)==0.)
+    if docwhere0.size>0:
+        docwhere0idx=docwhere0[0][0]
+        dec_remaining_c = labelist[docwhere0idx]
+    else:
+        dec_remaining_c = 1
+        docwhere0idx = -1
+    return dec_remaining_c, docwhere0idx
 
-data = extr_full
+data = act_full
 
 for c in carbs:
     for b in bios:
@@ -120,22 +137,35 @@ for c in carbs:
                     for v in variances:
                         for ctype in carb_types:
                             subset = data[(data['C_pool']==ctype)&(data['carbon_species']==c)&(data['biomass_species']==b)&(data['Seed']==s)&(data['Sim_series']==sim)&(data['DOC_initial_int']==d)&(data['Variance']==v)][dec_ratio_columns]
-                            decay_max = f_argmax(subset)
-                            decay_stop = f_argzero(subset)
+                            decay_max, max_point = f_argmax(subset)
+                            if max_point==-1:
+                                decay_stop = 10
+                            else:
+                                decay_stop,stop_point = f_argzero(subset)
                             data.loc[(data['C_pool']==ctype)&(data['carbon_species']==c)&(data['biomass_species']==b)&(data['Seed']==s)&(data['Sim_series']==sim)&(data['DOC_initial_int']==d)&(data['Variance']==v),'decay_max']=decay_max
                             data.loc[(data['C_pool']==ctype)&(data['carbon_species']==c)&(data['biomass_species']==b)&(data['Seed']==s)&(data['Sim_series']==sim)&(data['DOC_initial_int']==d)&(data['Variance']==v),'decay_stop']=decay_stop
 
 #%%
 extr_full=data
-#%%
-extr_full['decay_diff']=extr_full.decay_stop-extr_full.decay_max
-sns.scatterplot(x='FD_initial', y='decay_diff', data = extr_full, hue = 'DOC_initial_int')
-plt.xscale("log")
-#plt.yscale("log")
-#%%
+extr_full['cbd']=extr_full.carbon_species*extr_full.biomass_species*extr_full.DOC_initial_int
 extr_full.to_csv('C:/Users/swkh9804/Documents/random.csv', index=False)
 #%%
 extr_full = pd.read_csv('C:/Users/swkh9804/Documents/random.csv')
+no_necro = extr_full[extr_full!='necromass']
+#%%
+no_necro['logdec0']=np.log10(extr_full.dec0)
+g = sns.FacetGrid(col='C_pool', row = 'Variance', hue = 'logdec0', data = no_necro, palette="flare")
+g.map(sns.scatterplot, 'decay_max', 'decay_stop')
+g.set(ylim=(0, 100), xlim=(0,100), xlabel="%C for peak decomposition", ylabel="%C for C decomposition ending")
+g.add_legend()
+#%%
+sns.scatterplot(x='decay_max', y='decay_stop',data = no_necro, style = 'Variance', hue = 'DOC_initial_int', alpha = 0.7)
+plt.xlabel("%C at peak decomposition")
+plt.ylabel("%C persistent")
+plt.title("Fully active communities")
+#%%
+subset = extr_full[(extr_full['C_pool']=='oxidized_C')&(extr_full['Variance']==1.5)]
+sns.jointplot(data=subset, x = 'decay_max', y = 'decay_stop', hue = 'carbon_species')
 #%%
 pair_df = extr_full[extr_full.C_pool=='DOC'][['Variance','DOC_initial_int','Decay_constant_10','Decay_constant_20','Decay_constant_30','Decay_constant_40','Decay_constant_50','Decay_constant_60']]
 sns.pairplot(data=pair_df, hue = 'DOC_initial_int', corner =True, dropna=True)
