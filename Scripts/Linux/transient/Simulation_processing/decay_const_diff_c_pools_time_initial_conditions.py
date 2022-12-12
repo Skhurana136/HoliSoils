@@ -28,10 +28,9 @@ def derive_t_loss(sim_data, tim_points_num, loss_criteria):
                 if t_c.size > 0:
                     results_arr[c_idx, tim] = t_c[0][0]
                 else:
-                    results_arr[c_idx, tim:] = 0.#np.nan
-                    break
+                    results_arr[c_idx, tim] = 0.#np.nan
         else:
-            pass
+            results_arr[c_idx, :] = 0.#np.nan
 
     return results_arr
 
@@ -115,6 +114,11 @@ for c_n in cn_list:
         hr.close()
     print(dictionary_iter)
     decay_const_c_pools_data = pd.DataFrame.from_dict(all_results_dictionary,orient='index')
+    
     filename = os.path.join(results_dir, results_filename+result_fstring+"_temporal_decay_const_c_pools_data_initial_conditions.pkl")
     decay_const_c_pools_data.to_pickle(filename)
+    print ("Temporal decay constant for diff carbon pools are saved here ", filename)
+    
+    filename = os.path.join(results_dir, results_filename+result_fstring+"_temporal_decay_const_c_pools_data_initial_conditions.csv")
+    decay_const_c_pools_data.to_csv(filename)
     print ("Temporal decay constant for diff carbon pools are saved here ", filename)
