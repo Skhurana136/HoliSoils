@@ -32,8 +32,6 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
 tim_data = pd.concat(files)
 print(tim_data.columns)
 tim_data['DOC_initial_int'] = round(tim_data.DOC_initial, -3)
-
-#cols_to_merge = ['Seed', 'Sim_series', 'carbon_species', 'biomass_species', 'C_pool', 'T10', 'T10_base', 'T20', 'T20_base', 'T30', 'T30_base','T40', 'T40_base', 'T50', 'T50_base', 'T60', 'T60_base', 'activity', 'Variance',  'DOC_initial_int']
 fd_tim_data = pd.merge(fd_data, tim_data, on = ["Seed", "Variance", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series", "activity"])
 files = []
 for p,a in zip(sim_suffixes, sim_suffixes_var):
@@ -48,12 +46,6 @@ print(para_data.columns)
 cols_to_merge = para_data.columns.to_list()[2:]
 all_data = pd.merge(fd_tim_data, para_data[cols_to_merge], on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series"])
 all_data["active_H_c_connections"] = all_data['S_initial']*all_data['carbon_species']*all_data["activity"]/100
-#all_data["Decay_constant_10"] = 1/(all_data['T10']*5).to_numpy(dtype = float)    
-#all_data["Decay_constant_20"] = 1/(all_data['T20']*5).to_numpy(dtype = float)    
-#all_data["Decay_constant_30"] = 1/(all_data['T30']*5).to_numpy(dtype = float)
-#all_data["Decay_constant_40"] = 1/(all_data['T40']*5).to_numpy(dtype = float)    
-#all_data["Decay_constant_50"] = 1/(all_data['T50']*5).to_numpy(dtype = float)    
-#all_data["Decay_constant_60"] = 1/(all_data['T60']*5).to_numpy(dtype = float)
 all_data["active_H"] = all_data['S_initial']*all_data["activity"]/100
 all_data["FD_cov"]= np.sqrt(all_data.FD_initial)/all_data.vmax_mean
 init_doc_list = np.sort(list(all_data.DOC_initial_int.unique()))
@@ -61,6 +53,18 @@ activity_list = np.sort(list(all_data.activity.unique()))
 seed_sim_list = np.sort(list(all_data.Seed.unique()))
 c_sp_list = list(all_data.carbon_species.unique())
 bio_sp_list = list(all_data.biomass_species.unique())
+T_cols = list(x for x in all_data.columns if 'T' in x)
+old_t = 'T0'
+for t_col in T_cols:
+    if t_col == 'T0':
+        all_data['dec0'] = 1/(all_data['T0']*5)
+    else:
+        #all_data['dec'+t_col[1:]] = 1/(all_data[t_col]*5) #execute when all calcs are for subsequent calcs
+        all_data['T_diff'+t_col[1:]] = abs((all_data[t_col]-all_data[old_t])) #execute when all calcs are wrt initial conditions
+        all_data['dec'+t_col[1:]] = 1/(all_data['T_diff'+t_col[1:]]*5) #execute when all calcs are wrt initial conditions
+    all_data['dec_ratio'+t_col[1:]]=all_data['dec'+t_col[1:]]/all_data['dec0']#compl = all_data.dropna(subset = ['ratio_t_50'])
+    old_t = t_col
+
 for v in [0.01, 0.1, 0.5, 1., 1.5]:
     for s in seed_sim_list:
         for c in c_sp_list:
@@ -78,4 +82,4 @@ all_data['FD_ratio'] = all_data.FD_maxbio/all_data.FD_initial
 all_data['Biomass_ratio'] = all_data.Biomass_maxbio/all_data.Biomass_initial
 all_data["FD_initial_ratio"] = all_data.FD_initial/all_data.FD_initial_base                    
 all_data["FD_cov_ratio"] = all_data.FD_cov/all_data.FD_cov_base
-all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_iniitial_conditions_decay_const.csv"),index=False)
+all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const.csv"),index=False)
