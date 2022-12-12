@@ -63,8 +63,10 @@ for c_n in cn_list:
     c_b_row = []
     #results_filename = os.path.join(results_dir, filestring + str(c_n))
     tim_file = os.path.join(results_dir, filestring + str(c_n) + '_loss_temporal_temporal_decay_const_c_pools_data_initial_conditions.pkl')
+    #print(tim_file)
     tim_data = pd.read_pickle(tim_file)
-    Tcols = list(x for x in tim_data.columns if 'T' in x) 
+    Tcols = list(x for x in tim_data.columns if 'T' in x)
+    #print(tim_data.dtypes) 
 
     for seed_sim in seed_sim_list:
         # Load all datasets and save their Shannon and diversity indices in a dataframe
@@ -82,12 +84,12 @@ for c_n in cn_list:
                 c_b = "bio_n_"+ str(b_n)
                 dom_init = "dom_initial_" + str(t_dom_initial)
                 doc_input = (t_dom_initial) * input_factor
-                tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial']==t_dom_initial)&(tim_data['C_pool']=='DOC')].reset_index()
+                tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))&(tim_data['C_pool']=='DOC')].reset_index()
                 for baseline in ["b_1", "b_2", "b_3", "b_4","b_5"]:
                     if baseline == "b_1":
                         sim = baseline + "_all_"
                         char_tim_set = tim_subset[tim_subset.Sim_series==sim]
-                        print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
+                        #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
                         char_tim = char_tim_set[Tcols].values[0].astype(int)
                         sim_data = hr[sim][c_b][dom_init][seed_all]
                         rsdbcf = calc_chars(sim_data,char_tim)
@@ -97,6 +99,7 @@ for c_n in cn_list:
                         for label in ["a", "b", "c","d","e"]:
                             sim = baseline + "_" + label + "_"
                             char_tim = tim_subset[tim_subset.Sim_series==sim][Tcols].values[0].astype(int)
+                            #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
                             sim_data = hr[sim][c_b][dom_init][seed_all]
                             rsdbcf = calc_chars(sim_data,char_tim)
                             pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
