@@ -56,18 +56,15 @@ ip = 0
 init_dom_list = [1000,2000,5000,10000,15000]
 transient_switch = 0
 input_factor = transient_switch*5/365
-
+tim_file = os.path.join(results_dir, filestring + '_decay_const_c_pools_data_initial_conditions.pkl')
+#print(tim_file)
+tim_data = pd.read_pickle(tim_file)
+Tcols = list(x for x in tim_data.columns if 'T' in x)
+#print(tim_data.dtypes) 
 files=[]
 for c_n in cn_list:
     row = []
     c_b_row = []
-    #results_filename = os.path.join(results_dir, filestring + str(c_n))
-    tim_file = os.path.join(results_dir, filestring + str(c_n) + '_loss_temporal_temporal_decay_const_c_pools_data_initial_conditions.pkl')
-    #print(tim_file)
-    tim_data = pd.read_pickle(tim_file)
-    Tcols = list(x for x in tim_data.columns if 'T' in x)
-    #print(tim_data.dtypes) 
-
     for seed_sim in seed_sim_list:
         # Load all datasets and save their Shannon and diversity indices in a dataframe
         seed_all = 'seed_'+str(seed_sim)
