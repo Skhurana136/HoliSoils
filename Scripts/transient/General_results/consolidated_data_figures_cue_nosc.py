@@ -10,18 +10,54 @@ import matplotlib.lines as mlines
 
 ## LOAD RESULTS
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
-all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_diversity_parameters.csv"))
-print(all_data.shape)
-print(all_data.dtypes)
+sim_suffixes = ["_0_01", "_0_1", "_0_5", "", "_1_5x"]
+sim_suffixes_var = [0.01, 0.1, 0.5, 1, 1.5]
+
+files = []
+for p,a in zip(sim_suffixes, sim_suffixes_var):
+    filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "competition_adaptation_carbon_cue_wremaining_c_data.pkl")
+    data = pd.read_pickle(filename)
+    var_arr = np.zeros((data.shape[0],))+a
+    var_ser = pd.Series(var_arr, copy=False,name = "Variance")
+    data_var = data.join(var_ser)
+    files.append(data_var)
+all_data = pd.concat(files)
+print(all_data.columns)
+all_data['DOC_initial_int'] = round(all_data.DOC_initial, -3)
+all_data=all_data.dropna(subset=['%C'])
+all_data = all_data.replace(np.nan, 0.)
 #%%
-compl = all_data.dropna(subset = ['ratio_t_50'])
+#compl = all_data.dropna(subset = ['ratio_t_50'])
 act_full = all_data[all_data.Sim_series=="b_1_all_"]
 act_off = all_data[all_data.Sim_series!="b_1_all_"]
 extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial_int']==10000.)]
 extr_off = act_off[(act_off['DOC_initial_int']==2000.)|(act_off['DOC_initial_int']==10000.)]
-compl = compl.sort_values(by = 'active_H_c_connections')
-compl_act_off = compl[compl.activity<100]
-
+#compl = compl.sort_values(by = 'active_H_c_connections')
+#compl_act_off = compl[compl.activity<100]
+#%%
+sns.displot(x='CUE', data=act_full, hue = 'Variance', row = 'DOC_initial', col='%C', kind='kde')
+#%%
+docs = [1000.,2000.,5000.,10000.,15000.]
+cols = [3,6,12,18]#sim_suffixes_var
+#select_columns = act_full.index[act_full['FD_initial_cut_n']==fd_bins[2]].tolist()[:5]
+#select_columns = np.arange(769,770)#np.random.randint(0,1440,200)#[0,4,8,50,70,101,300,420,500,711,899,1000]#[10,40,80,1010,400,1400]#[0,4,8,101,420,1000]
+#labelist=[90.0,81.0,72.9,65.6,59.0,53.1,47.8,43.0,38.7,34.9,31.4,28.2,25.4,22.9,20.6,18.5,16.7,15.0,13.5,12.2,10.9,9.8,8.9,8.0,7.2,6.5,5.8,5.2,4.7,4.2,3.8,3.4,3.1,2.8,2.5,2.3,2.0,1.8,1.6,1.4]
+labelist=[90,80,70,60,50,40,30,20,10]
+fig, axes = plt.subplots(nrows=5, ncols=len(cols), figsize=(10,10), sharex=True,sharey='row')
+for iidx, i in enumerate(docs):
+    for jidx, j in enumerate(cols):
+        ax = axes[iidx][jidx]
+        cue_data = act_full[(act_full['DOC_initial_int']==i)&(act_full['carbon_species']==j)].reset_index()
+        ax.scatter(cue_data['%C'],cue_data['CUE'])
+        if jidx==0:
+            ax.set_ylabel(i)
+        if iidx==0:
+            ax.set_title(j)
+labels = list(str(int(x)) for x in labelist[::8])
+plt.ylim(bottom = 0)
+#plt.xticks(np.arange(0, 9, step=1), labelist)
+fig.supylabel("Normalized decay constant", fontsize = 16)
+fig.supxlabel("% remaining C", fontsize = 16)
 #%%
 h = sns.violinplot(x = "carbon_species", y = "NOSC_initial", data = act_full)
 plt.xlabel("Size of carbon pool")

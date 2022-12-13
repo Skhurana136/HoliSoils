@@ -9,7 +9,7 @@ sim_suffixes_var = [0.01, 0.1, 0.5, 1, 1.5]
 
 files = []
 for p,a in zip(sim_suffixes, sim_suffixes_var):
-    filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "competition_adaptation_carbon__loss_0.9_cue_combined_dataset.pkl")
+    filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "competition_adaptation_carbon_cue_wremaining_c_data.pkl")
     data = pd.read_pickle(filename)
     var_arr = np.zeros((data.shape[0],))+a
     var_ser = pd.Series(var_arr, copy=False,name = "Variance")
@@ -30,8 +30,8 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
 tim_data = pd.concat(files)
 print(tim_data.columns)
 tim_data['DOC_initial_int'] = round(tim_data.DOC_initial, -3)
-cols_to_merge = ['Seed', 'Sim_series', 'carbon_species', 'biomass_species', 'T_50', 'T_50_B1', 'S_max', 'S_t_50', 'S_t_50_b1', 'Biomass_t_50', 'Biomass_t_50_b1', 'DOC_removal', 't_50_days', 't_50_b1_days', 'activity', 'Variance',  'DOC_initial_int']
-fd_tim_data = pd.merge(fd_data, tim_data[cols_to_merge], on = ["Seed", "Variance", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series", "activity"])
+#cols_to_merge = ['Seed', 'Sim_series', 'carbon_species', 'biomass_species'#, 'S_t_50_b1', 'Biomass_t_50', 'Biomass_t_50_b1', 'DOC_removal', 't_50_days', 't_50_b1_days', 'activity', 'Variance',  'DOC_initial_int']
+fd_tim_data = pd.merge(fd_data, tim_data, on = ["Seed", "Variance", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series"])#, "activity"])
 files = []
 for p,a in zip(sim_suffixes, sim_suffixes_var):
     filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", "gen_spec_lognorm" + p + "_parameters.csv")
