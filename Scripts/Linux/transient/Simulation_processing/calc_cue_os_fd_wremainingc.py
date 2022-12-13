@@ -3,7 +3,8 @@ import os
 import pandas as pd
 import numpy as np
 import sys
-import h5py 
+import h5py
+import itertools
 
 def calc_chars(data, timidx):
     x = data['solution']
@@ -62,49 +63,40 @@ tim_file = os.path.join(results_dir, filestring + '_decay_const_c_pools_data_ini
 tim_data = pd.read_pickle(tim_file)
 
 files=[]
-for c_n in cn_list:
-    row = []
-    c_b_row = []
-    for seed_sim in seed_sim_list:
-        # Load all datasets and save their Shannon and diversity indices in a dataframe
-        seed_all = 'seed_'+str(seed_sim)
-        
-        details_subfolder = filestring + str(c_n) + '_'+str(seed_sim) + '_ip_' + str(ip)
-        simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
-        hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
+for c_n, b_n, seed_sim, t_dom_initial in itertools.product(cn_list, bio_n_series,seed_sim_list, init_dom_list):
 
-        filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
-        seed_details = pd.read_pickle(filename)
+    # Load all datasets and save their Shannon and diversity indices in a dataframe
+    seed_all = 'seed_'+str(seed_sim)
+    details_subfolder = filestring + str(c_n) + '_'+str(seed_sim) + '_ip_' + str(ip)
+    simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
+    hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
 
-        for b_n in bio_n_series:
-            for t_dom_initial in init_dom_list:
-                c_b = "bio_n_"+ str(b_n)
-                dom_init = "dom_initial_" + str(t_dom_initial)
-                doc_input = (t_dom_initial) * input_factor
-                tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))].reset_index()
-                print(tim_data.biomass_species.unique())
-                for baseline in ["b_1", "b_2", "b_3", "b_4","b_5"]:
-                    if baseline == "b_1":
-                        sim = baseline + "_all_"
-                        char_tim_set = tim_subset[tim_subset.Sim_series==sim]
-                        #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
-                        char_tim = char_tim_set['DOC'].values.astype(int)
-                        print(char_tim)
-                        sim_data = hr[sim][c_b][dom_init][seed_all]
-                        rsdbcf = calc_chars(sim_data,char_tim)
-                        pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
-                        files.append(pd_data)
-                    else:
-                        for label in ["a", "b", "c","d","e"]:
-                            sim = baseline + "_" + label + "_"
-                            char_tim = tim_subset[tim_subset.Sim_series==sim]['DOC'].values.astype(int)#[Tcols].values[0].astype(int)
-                            #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
-                            sim_data = hr[sim][c_b][dom_init][seed_all]
-                            rsdbcf = calc_chars(sim_data,char_tim)
-                            pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
-                            files.append(pd_data)
-                            
-        hr.close()
+    #filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
+    #seed_details = pd.read_pickle(filename)
+    c_b = "bio_n_"+ str(b_n)
+    dom_init = "dom_initial_" + str(t_dom_initial)
+    doc_input = (t_dom_initial) * input_factor
+    tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))].reset_index()
+    print(tim_data.biomass_species.unique())
+    base_case = "b_1_all_"
+    char_tim_set = tim_subset[tim_subset.Sim_series==base_case]
+    #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
+    char_tim = char_tim_set['DOC'].values.astype(int)
+    print(char_tim)
+    sim_data = hr[sim][c_b][dom_init][seed_all]
+    rsdbcf = calc_chars(sim_data,char_tim)
+    pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
+    files.append(pd_data)
+    for baseline, label in itertools.product(["b_2", "b_3", "b_4","b_5"],["a", "b", "c","d","e"]):
+        sim = baseline + "_" + label + "_"
+        char_tim = tim_subset[tim_subset.Sim_series==sim]['DOC'].values.astype(int)
+        #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
+        sim_data = hr[sim][c_b][dom_init][seed_all]
+        rsdbcf = calc_chars(sim_data,char_tim)
+        pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
+        files.append(pd_data)
+                
+    hr.close()
 
 cue_s_fd_data = pd.concat(files)
 print(cue_s_fd_data.columns)

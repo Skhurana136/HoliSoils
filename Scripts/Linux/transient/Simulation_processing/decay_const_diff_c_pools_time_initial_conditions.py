@@ -89,23 +89,20 @@ for c_n, b_n, seed_sim, t_dom_initial in itertools.product(cn_list, bio_n_series
     dom_init = "dom_initial_" + str(t_dom_initial)
     doc_input = (t_dom_initial) * input_factor
     #print(c_n, seed_sim, b_n, t_dom_initial)
-    if hr[base_case][c_b][dom_init][seed_all]:
-        sim_data = hr[base_case][c_b][dom_init][seed_all]
-        c_loss_tim_points=derive_t_loss(sim_data, loss_criteria_series)
-        print(c_n, b_n, seed_sim, base_case, t_dom_initial)
-        #print(c_loss_tim_points)
-        pd_data = create_pd_dataset(c_loss_tim_points, c_n, b_n, seed_sim, base_case, t_dom_initial)
+    sim_data = hr[base_case][c_b][dom_init][seed_all]
+    c_loss_tim_points=derive_t_loss(sim_data, loss_criteria_series)
+    print(c_n, b_n, seed_sim, base_case, t_dom_initial)
+    #print(c_loss_tim_points)
+    pd_data = create_pd_dataset(c_loss_tim_points, c_n, b_n, seed_sim, base_case, t_dom_initial)
+    files.append(pd_data)
+    dictionary_iter+=1
+    for baseline, label in itertools.product(["b_2", "b_3", "b_4","b_5"],["a", "b", "c","d","e"]):
+        sim = baseline + "_" + label + "_"
+        sim_data = hr[sim][c_b][dom_init][seed_all]
+        c_loss_tim_points=derive_t_loss(sim_data,loss_criteria_series)
+        pd_data = create_pd_dataset(c_loss_tim_points, c_n, b_n, seed_sim, sim, t_dom_initial)
         files.append(pd_data)
         dictionary_iter+=1
-    #for baseline in ["b_2", "b_3", "b_4","b_5"]:
-    #    for label in ["a", "b", "c","d","e"]:
-    #        sim = baseline + "_" + label + "_"
-    #        if hr[sim][c_b][dom_init][seed_all]:
-    #            sim_data = hr[sim][c_b][dom_init][seed_all]
-    #            c_loss_tim_points=derive_t_loss(sim_data,loss_criteria_series)
-    #            pd_data = create_pd_dataset(c_loss_tim_points, c_n, b_n, seed_sim, sim, t_dom_initial)
-    #            files.append(pd_data)
-    #            dictionary_iter+=1
     hr.close()
 print("Results number processed: ", dictionary_iter)
 decay_const_c_pools_data = pd.concat(files)
