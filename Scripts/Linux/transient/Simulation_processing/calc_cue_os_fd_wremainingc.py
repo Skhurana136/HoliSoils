@@ -16,7 +16,7 @@ def calc_chars(data, timidx):
     S = np.asarray(x['shannon'])
     Biomass = np.sum(B, axis = 1)
     DOC = np.sum(C, axis = 1)
-    TOC = DOC+B
+    TOC = DOC+Biomass
     search_idx=timidx
     nanargwhere = np.argwhere(search_idx==0.)
     search_idx[nanargwhere]=-1
@@ -34,7 +34,7 @@ def calc_chars(data, timidx):
     return results_array
 
 def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
-    dataset = pd.DataFrame(data = data_val, columns = ["%C", "S", "DOC", "Biomass", "CUE", "FD","NOSC"])
+    dataset = pd.DataFrame(data = data_val, columns = ["%C", "S", "DOC", "Biomass", "CUE", "FD","NOSC","TOSC"])
     #dataset = pd.melt(data_table, id_vars=["%C"], value_vars=["S", "DOC", "Biomass", "CUE", "FD","NOSC"], var_name = "Characteristic", value_name = "Char_value")
     carb_ser = pd.Series([c_val]*dataset.shape[0], copy=False,name = "carbon_species")
     bio_ser = pd.Series([b_val]*dataset.shape[0], copy=False,name = "biomass_species")
@@ -68,20 +68,17 @@ tim_data = pd.read_pickle(tim_file)
 
 files=[]
 for c_n, b_n, seed_sim, t_dom_initial in itertools.product(cn_list, bio_n_series,seed_sim_list, init_dom_list):
-
     # Load all datasets and save their Shannon and diversity indices in a dataframe
     seed_all = 'seed_'+str(seed_sim)
     details_subfolder = filestring + str(c_n) + '_'+str(seed_sim) + '_ip_' + str(ip)
     simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
     hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
-
     #filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
     #seed_details = pd.read_pickle(filename)
     c_b = "bio_n_"+ str(b_n)
     dom_init = "dom_initial_" + str(t_dom_initial)
     doc_input = (t_dom_initial) * input_factor
     tim_subset = tim_data[(tim_data['C_pool']=='TOC')&(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))].reset_index()
-    print(tim_data.biomass_species.unique())
     base_case = "b_1_all_"
     char_tim_set = tim_subset[tim_subset.Sim_series==base_case]
     #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
@@ -90,11 +87,15 @@ for c_n, b_n, seed_sim, t_dom_initial in itertools.product(cn_list, bio_n_series
     print(char_tim)
     sim_data = hr[base_case][c_b][dom_init][seed_all]
     rsdbcf = calc_chars(sim_data,char_tim)
-    pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
+    pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, base_case, t_dom_initial)
     files.append(pd_data)
     for baseline, label in itertools.product(["b_2", "b_3", "b_4","b_5"],["a", "b", "c","d","e"]):
         sim = baseline + "_" + label + "_"
-        char_tim = tim_subset[tim_subset.Sim_series==sim]['DOC'].values.astype(int)
+        #print(sim)
+        char_tim = tim_subset[tim_subset.Sim_series==sim]
+        char_tim_arr = char_tim_set['T_loss'].values.astype(int)
+        char_tim = np.cumsum(char_tim_arr)
+        #print(char_tim)
         #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
         sim_data = hr[sim][c_b][dom_init][seed_all]
         rsdbcf = calc_chars(sim_data,char_tim)
