@@ -88,7 +88,7 @@ for c_n, b_n, seed_sim, t_dom_initial in itertools.product(cn_list, bio_n_series
     char_tim_arr = char_tim_set['T_loss'].values.astype(int)
     char_tim = np.cumsum(char_tim_arr)
     print(char_tim)
-    sim_data = hr[sim][c_b][dom_init][seed_all]
+    sim_data = hr[base_case][c_b][dom_init][seed_all]
     rsdbcf = calc_chars(sim_data,char_tim)
     pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
     files.append(pd_data)
