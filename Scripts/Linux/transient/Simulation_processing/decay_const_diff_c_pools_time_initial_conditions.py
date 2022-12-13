@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import h5py 
 
-def derive_t_loss(sim_data, tim_points_num, loss_criteria):
+def derive_t_loss(sim_data, loss_criteria):
     paras = sim_data['parameters']
     os_i = np.asarray(paras["oxidation_state"])
     c_os_less_0 = np.where(os_i<-0.1)
@@ -18,21 +18,38 @@ def derive_t_loss(sim_data, tim_points_num, loss_criteria):
     C_eq_0 = np.sum(np.sum(C[:,c_os_eq_0], axis = 1),axis=1)
     C_gr_0 = np.sum(np.sum(C[:,c_os_gr_0], axis = 1),axis=1)
     conc_series = np.array([DOC, C_less_0, C_eq_0,C_gr_0]).T
-    results_arr = np.empty((4,tim_points_num))
+    tim_points_num = len(loss_criteria_series)
+    results_arr = np.empty((tim_points_num,5))
     for c_idx in list(range(4)):
         c_tim_series = conc_series[:,c_idx]
         c_tim_series_i = c_tim_series[0]
         if c_tim_series_i>0:
             for tim in list(range(tim_points_num)):
-                t_c = np.argwhere(np.round_(c_tim_series/c_tim_series_i, decimals = 2)==(loss_criteria[0]-0.1*tim))
+                results_arr[tim, 0] = (loss_criteria[tim]+0.1)*100
+                t_c = np.argwhere(np.round_(c_tim_series/c_tim_series_i, decimals = 2)==(loss_criteria[tim]))
                 if t_c.size > 0:
-                    results_arr[c_idx, tim] = t_c[0][0]
+                    results_arr[tim, c_idx+1] = t_c[0][0]
                 else:
-                    results_arr[c_idx, tim] = 0.#np.nan
+                    results_arr[tim, c_idx+1] = np.nan
         else:
-            results_arr[c_idx, :] = 0.#np.nan
+            results_arr[:,c_idx+1] = np.nan
 
     return results_arr
+
+def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
+    dataset = pd.DataFrame(data = data_val, columns = ["%C","DOC", "reduced_C", "necromass", "oxidized_C"])
+    carb_ser = pd.Series([c_val]*dataset.shape[0], copy=False,name = "carbon_species")
+    bio_ser = pd.Series([b_val]*dataset.shape[0], copy=False,name = "biomass_species")
+    seed_ser = pd.Series([seed_val]*dataset.shape[0], copy=False,name = "Seed")
+    sim_ser = pd.Series([sim_val]*dataset.shape[0], copy = False, name = 'Sim_series')
+    doc_ser = pd.Series([doc_i_val]*dataset.shape[0], copy = False, name = 'DOC_initial')
+    data_c = dataset.join(carb_ser)
+    data_cb = data_c.join(bio_ser)
+    data_cbs = data_cb.join(seed_ser)
+    data_cbss = data_cbs.join(sim_ser)
+    data_cbssd = data_cbss.join(doc_ser)
+
+    return data_cbssd
 
 ## LOAD RESULTS
 #project_dir = os.path.join("D:\Projects", "HoliSoils","data","transient", sys.argv[1])
@@ -47,13 +64,10 @@ ip = 0
 init_dom_list = [1000,2000,5000,10000,15000]
 transient_switch = 0
 input_factor = transient_switch*5/365
-num_tim_points = 9
-loss_crit_1 = 0.9
-loss_crit_2 = 0.8
-loss_crit_3 = 0.5
+loss_criteria_series = [0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1, 0.]
 result_fstring = "_loss_temporal"
 
-all_results_dictionary={}
+files=[]
 dictionary_iter = 0
 for c_n in cn_list:
     row = []
@@ -85,15 +99,12 @@ for c_n in cn_list:
                     dom_n, bio_n = sim_data['species_number']
                     carbon_initial = np.asarray(init['dom'])
                     DOC_i = np.sum(carbon_initial)
-                    c_loss_tim_points=derive_t_loss(sim_data, num_tim_points, [loss_crit_1,loss_crit_2,loss_crit_3])
+                    c_loss_tim_points=derive_t_loss(sim_data, loss_criteria_series)
+                    print(c_n, b_n, seed_sim, base_case, t_dom_initial)
                     print(c_loss_tim_points)
-                    for c_pool, i in zip(["DOC","reduced_C", "necromass", "oxidized_C"], list(range(4))):
-                        all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":base_case, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool}
-                        results_c_dict = {}
-                        for j in list(range(num_tim_points)):
-                            results_c_dict.update([("T"+str(j),c_loss_tim_points[i,j])])
-                        all_results_dictionary[dictionary_iter].update(results_c_dict)
-                        dictionary_iter+=1
+                    pd_data = create_pd_dataset(c_loss_tim_points, c_n, b_n, seed_sim, base_case, t_dom_initial)
+                    files.append(pd_data)
+                    dictionary_iter+=1
                 for baseline in ["b_2", "b_3", "b_4","b_5"]:
                     for label in ["a", "b", "c","d","e"]:
                         sim = baseline + "_" + label + "_"
@@ -103,22 +114,20 @@ for c_n in cn_list:
                             init = sim_data['initial_conditions']
                             carbon_initial = np.asarray(init['dom'])
                             DOC_i = np.sum(carbon_initial)
-                            c_loss_tim_points=derive_t_loss(sim_data, num_tim_points, [loss_crit_1,loss_crit_2,loss_crit_3])
-                            for i,c_pool in enumerate(["DOC","reduced_C", "necromass", "oxidized_C"]):
-                                all_results_dictionary[dictionary_iter]={"Seed":seed_sim, "Sim_series":sim, "carbon_species":dom_n, "biomass_species":bio_n, "DOC_initial":DOC_i,"C_pool": c_pool}
-                                results_c_dict = {}
-                                for j in list(range(num_tim_points)):
-                                    results_c_dict.update([("T"+str(j),c_loss_tim_points[i,j])])
-                                all_results_dictionary[dictionary_iter].update(results_c_dict)
-                                dictionary_iter+=1
+                            c_loss_tim_points=derive_t_loss(sim_data,loss_criteria_series)
+                            pd_data = create_pd_dataset(c_loss_tim_points, c_n, b_n, seed_sim, sim, t_dom_initial)
+                            files.append(pd_data)
+                            dictionary_iter+=1
         hr.close()
-    print(dictionary_iter)
-    decay_const_c_pools_data = pd.DataFrame.from_dict(all_results_dictionary,orient='index')
-    
-    filename = os.path.join(results_dir, results_filename+result_fstring+"_temporal_decay_const_c_pools_data_initial_conditions.pkl")
-    decay_const_c_pools_data.to_pickle(filename)
-    print ("Temporal decay constant for diff carbon pools are saved here ", filename)
-    
-    filename = os.path.join(results_dir, results_filename+result_fstring+"_temporal_decay_const_c_pools_data_initial_conditions.csv")
-    decay_const_c_pools_data.to_csv(filename)
-    print ("Temporal decay constant for diff carbon pools are saved here ", filename)
+print("Results number processed: ", dictionary_iter)
+decay_const_c_pools_data = pd.concat(files)
+print("The shape of the dataframe is ", decay_const_c_pools_data.shape)
+print("The dataframe contains the following data types ", decay_const_c_pools_data.dtypes)#decay_const_c_pools_data = pd.DataFrame.from_dict(all_results_dictionary,orient='index')
+
+filename = os.path.join(results_dir, filestring+"_decay_const_c_pools_data_initial_conditions.pkl")
+decay_const_c_pools_data.to_pickle(filename)
+print ("Temporal decay constant for diff carbon pools are saved here ", filename)
+
+filename = os.path.join(results_dir, filestring+"_decay_const_c_pools_data_initial_conditions.csv")
+decay_const_c_pools_data.to_csv(filename)
+print ("Temporal decay constant for diff carbon pools are saved here ", filename)

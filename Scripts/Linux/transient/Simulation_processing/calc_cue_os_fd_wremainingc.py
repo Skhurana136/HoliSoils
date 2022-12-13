@@ -15,7 +15,7 @@ def calc_chars(data, timidx):
     S = np.asarray(x['shannon'])
     Biomass = np.sum(B, axis = 1)
     DOC = np.sum(C, axis = 1)
-    nanargwhere = np.argwhere(timidx==0)+1
+    nanargwhere = np.argwhere(timidx==np.nan)+1
     search_idx = np.insert(timidx, 0,0)
     results_array = np.zeros((search_idx.size,6))
     results_array[:,0] = np.asarray([100,90,80,70,60,50,40,30,20,10])
@@ -24,7 +24,7 @@ def calc_chars(data, timidx):
     results_array[:,3] = Biomass[search_idx]
     results_array[:,4] = CUE[search_idx]
     results_array[:,5] = FD[search_idx]
-    results_array[nanargwhere,:] = np.nan
+    results_array[nanargwhere,1:] = np.nan
 
     return results_array
 
@@ -114,4 +114,8 @@ print("The dataframe contains the following data types ", cue_s_fd_data.dtypes)
 
 filename = os.path.join(results_dir, filestring+"cue_wremaining_c_data.pkl")
 cue_s_fd_data.to_pickle(filename)
+print ("CUE data is saved here ", filename)
+
+filename = os.path.join(results_dir, filestring+"cue_wremaining_c_data.csv")
+cue_s_fd_data.to_csv(filename)
 print ("CUE data is saved here ", filename)
