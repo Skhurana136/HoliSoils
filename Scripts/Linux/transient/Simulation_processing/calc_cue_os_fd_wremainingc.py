@@ -16,22 +16,26 @@ def calc_chars(data, timidx):
     S = np.asarray(x['shannon'])
     Biomass = np.sum(B, axis = 1)
     DOC = np.sum(C, axis = 1)
+    TOC = DOC+B
     search_idx=timidx
-    #nanargwhere = np.argwhere(search_idx==isnan(search_idx)
-    #search_idx[nanargwhere]=-1
-    results_array = np.zeros((timidx.size,6))
+    nanargwhere = np.argwhere(search_idx==0.)
+    search_idx[nanargwhere]=-1
+    results_array = np.zeros((timidx.size,8))
     results_array[:,0] = np.asarray([100,90,80,70,60,50,40,30,20,10])
     results_array[:,1] = S[search_idx]
     results_array[:,2] = DOC[search_idx]
     results_array[:,3] = Biomass[search_idx]
     results_array[:,4] = CUE[search_idx]
     results_array[:,5] = FD[search_idx]
+    results_array[:,6] = NOSC[search_idx]
+    results_array[:,7] = TOC[search_idx]
     #results_array[nanargwhere,1:] = np.nan
 
     return results_array
 
 def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
-    dataset = pd.DataFrame(data = data_val, columns = ["%C", "S", "DOC", "Biomass", "CUE", "FD"])
+    dataset = pd.DataFrame(data = data_val, columns = ["%C", "S", "DOC", "Biomass", "CUE", "FD","NOSC"])
+    #dataset = pd.melt(data_table, id_vars=["%C"], value_vars=["S", "DOC", "Biomass", "CUE", "FD","NOSC"], var_name = "Characteristic", value_name = "Char_value")
     carb_ser = pd.Series([c_val]*dataset.shape[0], copy=False,name = "carbon_species")
     bio_ser = pd.Series([b_val]*dataset.shape[0], copy=False,name = "biomass_species")
     seed_ser = pd.Series([seed_val]*dataset.shape[0], copy=False,name = "Seed")
@@ -76,12 +80,13 @@ for c_n, b_n, seed_sim, t_dom_initial in itertools.product(cn_list, bio_n_series
     c_b = "bio_n_"+ str(b_n)
     dom_init = "dom_initial_" + str(t_dom_initial)
     doc_input = (t_dom_initial) * input_factor
-    tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))].reset_index()
+    tim_subset = tim_data[(tim_data['C_pool']=='TOC')&(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))].reset_index()
     print(tim_data.biomass_species.unique())
     base_case = "b_1_all_"
     char_tim_set = tim_subset[tim_subset.Sim_series==base_case]
     #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
-    char_tim = char_tim_set['DOC'].values.astype(int)
+    char_tim_arr = char_tim_set['T_loss'].values.astype(int)
+    char_tim = np.cumsum(char_tim_arr)
     print(char_tim)
     sim_data = hr[sim][c_b][dom_init][seed_all]
     rsdbcf = calc_chars(sim_data,char_tim)
