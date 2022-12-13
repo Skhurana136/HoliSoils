@@ -44,8 +44,8 @@ def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
     return data_cbssd
 
 ## LOAD RESULTS
-#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
+#project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
 filestring = 'competition_adaptation_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
@@ -59,8 +59,7 @@ input_factor = transient_switch*5/365
 tim_file = os.path.join(results_dir, filestring + '_decay_const_c_pools_data_initial_conditions.pkl')
 #print(tim_file)
 tim_data = pd.read_pickle(tim_file)
-Tcols = list(x for x in tim_data.columns if 'T' in x)
-#print(tim_data.dtypes) 
+
 files=[]
 for c_n in cn_list:
     row = []
@@ -81,13 +80,15 @@ for c_n in cn_list:
                 c_b = "bio_n_"+ str(b_n)
                 dom_init = "dom_initial_" + str(t_dom_initial)
                 doc_input = (t_dom_initial) * input_factor
-                tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))&(tim_data['C_pool']=='DOC')].reset_index()
+                tim_subset = tim_data[(tim_data['carbon_species']==c_n)&(tim_data['Seed']==seed_sim)&(tim_data['biomass_species']==b_n)&(tim_data['DOC_initial'].round(decimals=0).astype(int)==int(t_dom_initial))].reset_index()
+                print(tim_data.biomass_species.unique())
                 for baseline in ["b_1", "b_2", "b_3", "b_4","b_5"]:
                     if baseline == "b_1":
                         sim = baseline + "_all_"
                         char_tim_set = tim_subset[tim_subset.Sim_series==sim]
                         #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
-                        char_tim = char_tim_set[Tcols].values[0].astype(int)
+                        char_tim = char_tim_set['DOC'].values.astype(int)
+                        print(char_tim)
                         sim_data = hr[sim][c_b][dom_init][seed_all]
                         rsdbcf = calc_chars(sim_data,char_tim)
                         pd_data = create_pd_dataset(rsdbcf, c_n, b_n, seed_sim, sim, t_dom_initial)
@@ -95,7 +96,7 @@ for c_n in cn_list:
                     else:
                         for label in ["a", "b", "c","d","e"]:
                             sim = baseline + "_" + label + "_"
-                            char_tim = tim_subset[tim_subset.Sim_series==sim][Tcols].values[0].astype(int)
+                            char_tim = tim_subset[tim_subset.Sim_series==sim]['DOC'].values.astype(int)#[Tcols].values[0].astype(int)
                             #print(c_n, seed_sim, b_n, t_dom_initial, sim, char_tim_set.shape)
                             sim_data = hr[sim][c_b][dom_init][seed_all]
                             rsdbcf = calc_chars(sim_data,char_tim)

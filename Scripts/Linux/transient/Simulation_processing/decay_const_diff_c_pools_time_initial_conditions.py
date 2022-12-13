@@ -72,19 +72,15 @@ dictionary_iter = 0
 for c_n in cn_list:
     row = []
     c_b_row = []
-    results_filename = os.path.join(results_dir, filestring + str(c_n))
-
+    #results_filename = os.path.join(results_dir, filestring + str(c_n))
     for seed_sim in seed_sim_list:
         # Load all datasets and save their Shannon and diversity indices in a dataframe
-        seed_all = 'seed_'+str(seed_sim)
-        
+        seed_all = 'seed_'+str(seed_sim)        
         details_subfolder = filestring + str(c_n) + '_'+str(seed_sim) + '_ip_' + str(ip)
         simulations_dir = os.path.join(project_dir, "simulations", details_subfolder)
         hr = h5py.File(os.path.join(simulations_dir,"simulations.h5"), mode = 'r')
-
         filename = os.path.join(simulations_dir, "seeds_randoms.pkl")
         seed_details = pd.read_pickle(filename)
-
         for b_n in bio_n_series:
             for t_dom_initial in init_dom_list:
                 base_case = "b_1_all_"
@@ -129,5 +125,5 @@ decay_const_c_pools_data.to_pickle(filename)
 print ("Temporal decay constant for diff carbon pools are saved here ", filename)
 
 filename = os.path.join(results_dir, filestring+"_decay_const_c_pools_data_initial_conditions.csv")
-decay_const_c_pools_data.to_csv(filename)
+decay_const_c_pools_data.to_csv(filename, index = False)
 print ("Temporal decay constant for diff carbon pools are saved here ", filename)

@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=sim_proc_0_01
 #SBATCH --time=10:00:00
-#SBATCH --mem=2000
+#SBATCH --mem=20000
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022
 #SBATCH --output=./Reports/output_%j.out
