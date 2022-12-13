@@ -15,16 +15,17 @@ def calc_chars(data, timidx):
     S = np.asarray(x['shannon'])
     Biomass = np.sum(B, axis = 1)
     DOC = np.sum(C, axis = 1)
-    nanargwhere = np.argwhere(timidx==np.nan)+1
-    search_idx = np.insert(timidx, 0,0)
-    results_array = np.zeros((search_idx.size,6))
+    search_idx=timidx
+    nanargwhere = np.isnan(search_idx)
+    search_idx[nanargwhere]=-1
+    results_array = np.zeros((timidx.size,6))
     results_array[:,0] = np.asarray([100,90,80,70,60,50,40,30,20,10])
     results_array[:,1] = S[search_idx]
     results_array[:,2] = DOC[search_idx]
     results_array[:,3] = Biomass[search_idx]
     results_array[:,4] = CUE[search_idx]
     results_array[:,5] = FD[search_idx]
-    results_array[nanargwhere,1:] = np.nan
+    #results_array[nanargwhere,1:] = np.nan
 
     return results_array
 
@@ -44,8 +45,8 @@ def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
     return data_cbssd
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
-#project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
 filestring = 'competition_adaptation_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
