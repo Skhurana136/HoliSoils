@@ -59,8 +59,8 @@ def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
     return data_cbssd
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:\Projects", "HoliSoils","data","transient", sys.argv[1])
-#project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
+#project_dir = os.path.join("D:\Projects", "HoliSoils","data","transient", sys.argv[1])
+project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
 filestring =  'competition_adaptation_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
