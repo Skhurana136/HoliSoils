@@ -7,7 +7,7 @@ import numpy as np
 #project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
 project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 results_dir = os.path.join(project_dir, "results")
-filestring = "competition_adaptation_carbon_cue_wremaining_c_data.pkl"
+filestring = "competition_adaptation_carbon_cue_wremaining_c_data"
 results_filename = filestring + "_combined_dataset"
 sim_suffixes = ["_0_01", "_0_1", "_0_5", "", "_1_5x"]
 sim_suffixes_var = [0.01, 0.1, 0.5, 1, 1.5]
@@ -27,7 +27,6 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
 
 tim_data = pd.concat(files)
 tim_data['DOC_initial_int'] = round(tim_data.DOC_initial, -3)
-tim_data = pd.concat(files)
 print(tim_data.columns)
 print(tim_data.shape)
 tim_data.drop_duplicates()

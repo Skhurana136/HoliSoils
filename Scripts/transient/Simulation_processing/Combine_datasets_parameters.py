@@ -25,8 +25,6 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
 para_data = pd.concat(files)
 
 tim_data = pd.concat(files)
-tim_data['DOC_initial_int'] = round(tim_data.DOC_initial, -3)
-tim_data = pd.concat(files)
 print(tim_data.columns)
 print(tim_data.shape)
 tim_data.drop_duplicates()
