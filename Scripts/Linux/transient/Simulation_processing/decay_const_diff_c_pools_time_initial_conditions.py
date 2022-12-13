@@ -30,9 +30,9 @@ def derive_t_loss(sim_data, loss_criteria):
                 if t_c.size > 0:
                     results_arr[tim, c_idx+1] = t_c[0][0]
                 else:
-                    results_arr[tim, c_idx+1] = np.nan
+                    results_arr[tim, c_idx+1] = -1#np.nan
         else:
-            results_arr[:,c_idx+1] = np.nan
+            results_arr[:,c_idx+1] = -1#np.nan
 
     return results_arr
 

@@ -16,8 +16,8 @@ def calc_chars(data, timidx):
     Biomass = np.sum(B, axis = 1)
     DOC = np.sum(C, axis = 1)
     search_idx=timidx
-    nanargwhere = np.isnan(search_idx)
-    search_idx[nanargwhere]=-1
+    #nanargwhere = np.argwhere(search_idx==isnan(search_idx)
+    #search_idx[nanargwhere]=-1
     results_array = np.zeros((timidx.size,6))
     results_array[:,0] = np.asarray([100,90,80,70,60,50,40,30,20,10])
     results_array[:,1] = S[search_idx]
