@@ -21,6 +21,7 @@ def calc_chars(data, timidx):
     nanargwhere = np.argwhere(search_idx==0.)
     search_idx[nanargwhere]=-1
     results_array = np.zeros((timidx.size,8))
+    results_array = np.zeros((search_idx.size,12))
     results_array[:,0] = np.asarray([100,90,80,70,60,50,40,30,20,10])
     results_array[:,1] = S[search_idx]
     results_array[:,2] = DOC[search_idx]
@@ -28,13 +29,16 @@ def calc_chars(data, timidx):
     results_array[:,4] = CUE[search_idx]
     results_array[:,5] = FD[search_idx]
     results_array[:,6] = NOSC[search_idx]
-    results_array[:,7] = TOC[search_idx]
+    results_array[:,7] = S[0]
+    results_array[:,8] = Biomass[0]
+    results_array[:,9] = CUE[0]
+    results_array[:,10] = FD[0]
+    results_array[:,11] = NOSC[0]
     #results_array[nanargwhere,1:] = np.nan
-
     return results_array
 
 def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
-    dataset = pd.DataFrame(data = data_val, columns = ["%C", "S", "DOC", "Biomass", "CUE", "FD","NOSC","TOSC"])
+    dataset = pd.DataFrame(data = data_val, columns = ["%C", "S", "DOC", "Biomass", "CUE", "FD", "NOSC","S_initial", "Biomass_initial", "CUE_initial", "FD_initial", "NOSC_initial"])
     #dataset = pd.melt(data_table, id_vars=["%C"], value_vars=["S", "DOC", "Biomass", "CUE", "FD","NOSC"], var_name = "Characteristic", value_name = "Char_value")
     carb_ser = pd.Series([c_val]*dataset.shape[0], copy=False,name = "carbon_species")
     bio_ser = pd.Series([b_val]*dataset.shape[0], copy=False,name = "biomass_species")
@@ -46,12 +50,11 @@ def create_pd_dataset(data_val, c_val, b_val, seed_val, sim_val, doc_i_val):
     data_cbs = data_cb.join(seed_ser)
     data_cbss = data_cbs.join(sim_ser)
     data_cbssd = data_cbss.join(doc_ser)
-
     return data_cbssd
 
 ## LOAD RESULTS
-#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
-project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
+#project_dir = os.path.join('/proj', 'hs_micro_div_072022', 'Project_data', 'transient', sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
 filestring = 'competition_adaptation_carbon_' #null
 seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
