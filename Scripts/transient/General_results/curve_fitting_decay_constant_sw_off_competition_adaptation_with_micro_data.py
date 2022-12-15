@@ -13,7 +13,7 @@ import matplotlib.lines as mlines
 
 ## LOAD RESULTS
 
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","activity_loss_-02")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","gen_spec_lognorm")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
@@ -514,7 +514,7 @@ for seed in seed_list:
             for b_sp in bio_sp_list:
                 sub4 = sub3[sub3.biomass_species==b_sp]
                 #sub = all_data[(all_data['Seed']==seed)&]
-                sub50 = sub4[sub4.activity==50]
+                sub50 = sub4[sub4.activity_y==50]
                 median_t_50_B2 = np.median(sub50["T_50"])
                 row.append([seed, doci, c_sp, b_sp, median_t_50_B2])
 T_50_B2 = pd.DataFrame.from_records(row, columns = ["Seed", "DOC_initial_int", "carbon_species", "biomass_species", "T_50_B2"])
@@ -526,9 +526,9 @@ B2_df["ratio_t_50_b2"] = B2_df["T_50"]/B2_df["T_50_B2"]
 B2_df["dec_const_b2_norm"] = 1/B2_df.ratio_t_50_b2
 
 #%%
-B2_df["x_b2"] = B2_df.S_initial*(B2_df.activity/100 - 50/100)
+B2_df["x_b2"] = B2_df.S_initial*(B2_df.activity_x/100 - 50/100)
 B2_df["x_b2_v2"] = B2_df.S_initial
-B2_df["x_b2_v3"] = (B2_df.activity/100 - 50/100)
+B2_df["x_b2_v3"] = (B2_df.activity_x/100 - 50/100)
 plt.scatter(data = B2_df, x="x_b2", y="dec_const_b2_norm")
 plt.ylabel("Normalized decay constant")
 plt.xlabel("Change in active Shannon diversity")
@@ -539,7 +539,7 @@ B2_df = B2_df.dropna()
 ### PREDICT IMPACT OF CHANGING DIVERSITY on DECAY CONSTANT B2
 #%%
 
-B2_df["exp_x_var"] = B2_df.S_initial*(B2_df.activity/100 - 50/100)#/B2_df.DOC_initial#
+B2_df["exp_x_var"] = B2_df.S_initial*(B2_df.activity_x/100 - 50/100)#/B2_df.DOC_initial#
 B2_df = B2_df.sort_values(by=["exp_x_var"])
 X = B2_df['exp_x_var']
 y = B2_df["dec_const_b2_norm"]

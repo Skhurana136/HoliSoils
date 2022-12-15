@@ -8,7 +8,7 @@ import seaborn as sns
 
 ## LOAD RESULTS
 
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","activity_loss_-02")
+project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient","gen_spec_skew")
 simulations_dir = os.path.join(project_dir, "simulations")
 results_dir = os.path.join(project_dir, "results")
 figures_dir = os.path.join(project_dir, "figures")
@@ -41,7 +41,7 @@ sns.displot(data = all_data, x = "DOC_end_max_os_pc", kind = "kde", hue = "carbo
 #all_data_n["os_ratio_ratio"] = all_data_n.mean_os_ratio/all_data_n.mean_os_ratio_base
 #%%
 activity_list = [100.0, 75.0, 50.0, 25.0, 10.0]#list(all_data.activity.unique())
-all_data["hue_var"] = 1 - all_data.S_initial#*all_data_n.carbon_species#/all_data.vmax_sum_base##all_data.vmax_mean*(all_data.DOC_initial_int/(all_data.carbon_species*all_data.biomass_species))
+all_data["hue_var"] = 1 - all_data.S_in                          itial#*all_data_n.carbon_species#/all_data.vmax_sum_base##all_data.vmax_mean*(all_data.DOC_initial_int/(all_data.carbon_species*all_data.biomass_species))
 fig, axes = plt.subplots(5,5, figsize = (12,12), sharex = True, sharey = True)
 for i in list(range(5)):
     sub1 = all_data[all_data.DOC_initial_int == init_doc_list[i]]

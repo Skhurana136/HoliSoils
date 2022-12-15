@@ -5,14 +5,15 @@ import numpy as np
 import sys
 
 ## LOAD RESULTS
-project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", "activity_loss_-02")
+project_dir = os.path.join("C:/", "Users", "swkh9804", "Documents", "Project_data", "HoliSoils", "transient", sys.argv[1])
+#project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient", sys.argv[1])
 results_dir = os.path.join(project_dir, "results")
-filestring = sys.argv[1] +"_carbon_"
+filestring = "competition_adaptation_carbon_"
 filestring2 = "_loss_0.9"# + sys.argv[2]
 results_filename = filestring + filestring2 + "_combined_dataset"
 results_filename_cb = filestring + filestring2 + "_c_b_combined_dataset"
 
-seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803, 898393994, 420,13012022,13061989]
+seed_sim_list = [610229235, 983307757, 643338060, 714504443, 277077803]#, 898393994, 420,13012022,13061989]
 cn_list = [3,6,12,18]
 
 count = 0
