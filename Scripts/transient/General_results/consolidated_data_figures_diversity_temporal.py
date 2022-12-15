@@ -20,7 +20,9 @@ docs = all_data.DOC_initial_int.unique().tolist()
 sims = all_data.Sim_series.unique().tolist()
 variances=all_data.Variance.unique().tolist()
 all_data.replace([np.inf, -np.inf, np.nan], 0, inplace=True)
-dec_ratio_columns = list(x for x in all_data.columns if 'dec_ratio' in x) 
+col_list = all_data.columns.tolist()
+remove_indices = [-23,-22,-20,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4]
+remove_col_list = list(col_list[i] for i in remove_indices)
 #all_data[dec_ratio_columns].clip(lower=0, inplace=True)
 #%%
 ###--------------------------------------------------------
@@ -59,8 +61,9 @@ def f_argzero(x):
         docwhere0idx = -1
     return dec_remaining_c#, docwhere0idx
 
-all_data['decay_max'] = all_data.apply(f_argmax, axis=1)
-all_data['decay_stop'] = all_data.apply(f_argzero, axis=1)
+#all_data['decay_max'] = all_data.apply(f_argmax, axis=1)
+#all_data['decay_stop'] = all_data.apply(f_argzero, axis=1)
+
 
 #%%
 ###--------------------------------------------------------
@@ -68,7 +71,8 @@ all_data['decay_stop'] = all_data.apply(f_argzero, axis=1)
 ###--------------------------------------------------------
 act_full = all_data[all_data.Sim_series=="b_1_all_"]
 extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial_int']==10000.)]
-
+#%%
+extr_full = extr_full.drop(columns=remove_col_list)
 #%%
 ###--------------------------------------------------------
 ### COMPARISON OF DECAY CONSTANT OF DIFFERENT CARBON POOLS
