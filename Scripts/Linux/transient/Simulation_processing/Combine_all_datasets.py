@@ -41,6 +41,7 @@ sim_list = list(all_data.Sim_series.unique())
 all_data['Decay_const'] = 1/all_data['T_loss']
 initial_data = all_data[all_data['%C']==100.]
 initial_data.rename(columns={'Decay_const':'Decay_const_initial'}, inplace=True)
+initial_data = initial_data[["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool", "Decay_const_initial"]]
 tim_initial_data = pd.merge(all_data, initial_data, on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool"],suffixes=('', '_y'))
 tim_initial_data.drop(tim_initial_data.filter(regex='_y$').columns, axis=1, inplace=True)
 #tim_initial_data.to_csv(os.path.join("C:\Users\swkh9804\Documents\Project_data\HoliSoilssimulation_results_temporal_initial_conditions_decay_const_modified.csv"), index=False)
