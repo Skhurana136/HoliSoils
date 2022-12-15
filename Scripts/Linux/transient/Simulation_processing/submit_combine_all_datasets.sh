@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=all_combine
 #SBATCH --time=72:00:00
-#SBATCH --mem=90000
+#SBATCH -C fat --exclusive
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022
 #SBATCH --output=./Reports/output_%j.out
@@ -16,4 +16,5 @@ module load foss/2020b
 module load Anaconda/2021.05-nsc1
 conda activate ds-envsci-env
 python "/home/x_swakh/tools/HoliSoils/Scripts/Linux/transient/Simulation_processing/Combine_all_datasets.py"
+# python blah blah --mem=99999
 # Scripts ends here
