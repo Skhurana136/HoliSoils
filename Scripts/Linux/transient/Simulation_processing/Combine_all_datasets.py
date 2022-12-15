@@ -34,8 +34,8 @@ print(all_data.columns)
 init_doc_list = np.sort(list(all_data.DOC_initial_int.unique()))
 #activity_list = np.sort(list(all_data.activity_x.unique()))
 seed_sim_list = np.sort(list(all_data.Seed.unique()))
-c_sp_list = list(all_data.carbon_species.unique())
 bio_sp_list = list(all_data.biomass_species.unique())
+c_sp_list = list(all_data.carbon_species.unique())
 sim_list = list(all_data.Sim_series.unique())
 
 all_data['Decay_const'] = 1/all_data['T_loss']
