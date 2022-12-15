@@ -52,4 +52,4 @@ tim_initial_data.drop(tim_initial_data.filter(regex='_y$').columns, axis=1, inpl
 #all_data["FD_cov"]= np.sqrt(all_data.FD_initial)/all_data.vmax_mean
 #all_data['vmax_ratio'] = all_data.vmax_mean/all_data.vmax_mean_base
 all_data['decay_ratio'] = all_data.decay_const/all_data.Decay_const_initial
-all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const.csv"),index=False)
+all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const_pandas.csv"),index=False)
