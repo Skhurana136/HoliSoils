@@ -11,6 +11,13 @@ project_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const.csv"))
 print(all_data.shape)
 print(all_data.dtypes)
+all_data['Decay_const'] = 1/all_data['T_loss']
+initial_data = all_data[all_data['%C']==100.]
+initial_data.rename(columns={'Decay_const':'Decay_const_initial'}, inplace=True)
+tim_initial_data = pd.merge(all_data, initial_data, on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool"],suffixes=('', '_y'))
+tim_initial_data.drop(tim_initial_data.filter(regex='_y$').columns, axis=1, inplace=True)
+tim_initial_data.to_csv(os.path.join("C:\Users\swkh9804\Documents\Project_data\HoliSoilssimulation_results_temporal_initial_conditions_decay_const_modified.csv"), index=False)
+
 seeds= all_data.Seed.unique().tolist()
 bios = all_data.biomass_species.unique().tolist()
 carbs = all_data.carbon_species.unique().tolist()
@@ -26,12 +33,6 @@ remove_col_list = list(col_list[i] for i in remove_indices)
 act_full = all_data[all_data.Sim_series=="b_1_all_"]
 extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial_int']==10000.)]
 extr_full = extr_full.drop(columns=remove_col_list)
-extr_full['Decay_const'] = 1/extr_full['T_loss']
-initial_data = extr_full[extr_full['%C']==100.]#["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool","Decay_const"]
-initial_data.rename({'Decay_const':'Decay_const_initial'}, inplace=True)
-tim_initial_data = pd.merge(extr_full, initial_data, on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool"],suffixes=('', '_y'))
-tim_initial_data.drop(tim_initial_data.filter(regex='_y$').columns, axis=1, inplace=True)
-tim_initial_data.to_csv(os.path.join("C:\Users\swkh9804\Documents\Project_data\HoliSoilssimulation_results_temporal_initial_conditions_decay_const_modified.csv"), index=False)
 #%%
 ###--------------------------------------------------------
 ### BINNING ACCORDING TO FUNCTIONAL DIVERSITY
