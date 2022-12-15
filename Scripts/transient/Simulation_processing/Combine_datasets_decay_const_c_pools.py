@@ -17,6 +17,11 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
     filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", filestring+".pkl")
     data = pd.read_pickle(filename)
     data['decay_const'] = 1/(data['T_loss']*5)
+    initial_data = data[data['%C']==100.]
+    initial_data.rename(columns={'decay_const':'decay_const_initial'}, inplace=True)
+    initial_data = initial_data[["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool", "decay_const_initial"]]
+    data = pd.merge(data, initial_data, on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series", "C_pool"],suffixes=('', '_y'))
+    data.drop(data.filter(regex='_y$').columns, axis=1, inplace=True)
     var_arr = np.zeros((data.shape[0],))+a
     var_ser = pd.Series(var_arr, copy=False,name = "Variance")
     cases = list(data.Sim_series.unique())
