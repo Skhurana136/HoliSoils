@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=all_combine
 #SBATCH --time=72:00:00
-#SBATCH -C fat --exclusive
+#SBATCH -C 'fat&diskM'
 #SBATCH -n 1
 #SBATCH --chdir=/proj/hs_micro_div_072022
 #SBATCH --output=./Reports/output_%j.out
