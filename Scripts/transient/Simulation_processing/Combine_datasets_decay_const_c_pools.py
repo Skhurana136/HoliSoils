@@ -17,6 +17,13 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
     filename = os.path.join(project_dir, "gen_spec_lognorm" + p, "results", filestring+".pkl")
     data = pd.read_pickle(filename)
     data['decay_const'] = 1/(data['T_loss']*5)
+    data['DOC_initial_int'] = round(data.DOC_initial, -3)
+    initial_data = data[data['%C']==100.]
+    initial_data = initial_data[["Seed", "C_pool","DOC_initial_int","biomass_species", "carbon_species", "Sim_series","decay_const"]]
+    initial_data.rename(columns={'decay_const':'decay_const_initial'}, inplace=True)
+    print(initial_data.columns)
+    data = pd.merge(data,initial_data, on = ["Seed", "C_pool", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series"], suffixes=('', '_y'))
+    data.drop(data.filter(regex='_y$').columns, axis=1, inplace=True)
     var_arr = np.zeros((data.shape[0],))+a
     var_ser = pd.Series(var_arr, copy=False,name = "Variance")
     cases = list(data.Sim_series.unique())
@@ -26,7 +33,7 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
     files.append(data_var)
 
 tim_data = pd.concat(files)
-tim_data['DOC_initial_int'] = round(tim_data.DOC_initial, -3)
+
 print(tim_data.columns)
 print(tim_data.shape)
 tim_data.drop_duplicates()
