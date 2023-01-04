@@ -15,17 +15,16 @@ fd_data = pd.read_pickle(fd_file)
 tim_data = pd.read_pickle(tim_file)
 fd_data.drop(columns="DOC_initial", inplace=True)
 tim_data.drop(columns="DOC_initial", inplace=True)
-tim_data['%C'] = tim_data['$C'].round(decimals=1)
-#para_data = pd.read_pickle(para_file)
+tim_data['%C'] = tim_data['%C'].round(decimals=1)
+para_data = pd.read_pickle(para_file)
 
 all_data = pd.merge(fd_data,tim_data, on = ["Seed", "%C","Variance", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series", "activity"], suffixes=('', '_y'))
 all_data["active_H_c_connections"] = all_data['S_initial']*all_data['carbon_species']*all_data["activity"]/100
 all_data["active_H"] = all_data['S_initial']*all_data["activity"]/100
 all_data['FD_ratio'] = all_data.FD/all_data.FD_initial
 all_data['Biomass_ratio'] = all_data.Biomass/all_data.Biomass_initial
-all_data['decay_ratio'] = all_data.decay_const/all_data.decay_const_initial
 print(all_data.columns)
-all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const_with_paras.csv"),index=False)
+all_data.to_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const.csv"),index=False)
 
 all_data = pd.merge(all_data, para_data, on = ["Seed", "Variance", "biomass_species", "carbon_species", "Sim_series"],suffixes=('', '_y'))
 all_data.drop(all_data.filter(regex='_y$').columns, axis=1, inplace=True)

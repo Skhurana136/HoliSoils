@@ -24,13 +24,19 @@ for p,a in zip(sim_suffixes, sim_suffixes_var):
     print(initial_data.columns)
     data = pd.merge(data,initial_data, on = ["Seed", "C_pool", "DOC_initial_int","biomass_species", "carbon_species", "Sim_series"], suffixes=('', '_y'))
     data.drop(data.filter(regex='_y$').columns, axis=1, inplace=True)
+    data['decay_ratio'] = data.decay_const/data.decay_const_initial
     var_arr = np.zeros((data.shape[0],))+a
     var_ser = pd.Series(var_arr, copy=False,name = "Variance")
     cases = list(data.Sim_series.unique())
     for c, a in zip (cases, [100, 10, 10, 10, 10, 10, 25, 25, 25, 25, 25, 50, 50, 50, 50, 50, 75, 75, 75, 75, 75]):        
         data.loc[data['Sim_series']==c, 'activity'] = a
-    data_var = data.join(var_ser)
-    files.append(data_var)
+    data = data.join(var_ser)
+    data.replace({'decay_ratio': {np.inf:-1, -np.inf:-1, np.nan:-1}}, inplace=True)
+    maxid = data.groupby(["Seed", "C_pool","DOC_initial_int","biomass_species", "carbon_species", "Sim_series"])['decay_ratio'].transform('idxmax').values
+    minid = data.groupby(["Seed", "C_pool","DOC_initial_int","biomass_species", "carbon_species", "Sim_series"])['decay_ratio'].transform('idxmin').values
+    data['decay_max'] = data.loc[maxid,'%C'].values
+    data['decay_stop'] = data.loc[minid,'%C'].values
+    files.append(data)
 
 tim_data = pd.concat(files)
 
