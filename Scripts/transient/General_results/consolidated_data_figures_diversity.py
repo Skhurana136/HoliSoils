@@ -22,9 +22,11 @@ compl = all_data#.dropna()#subset = ['decay_const_initial'])
 act_full = compl[compl.Sim_series=="b_1_all_"]
 maxid = act_full.groupby(["Seed","C_pool","DOC_initial_int","biomass_species", "carbon_species", "Variance"])['Biomass_ratio'].transform('idxmax').values
 act_full['Biomass_max_ratio'] = act_full.loc[maxid,'Biomass_ratio'].values
+act_full["Biomass_max_ratio"].mask(act_full["Biomass_max_ratio"] <1, 1.0, inplace=True)
 act_full['fd_ratio_at_max_Biomass'] = act_full.loc[maxid,'FD_ratio'].values
+act_full.loc[act_full["Biomass_max_ratio"]==1.0, 'fd_ratio_at_max_Biomass']=1.0
 extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial_int']==10000.)]
-toc = extr_full[(extr_full['C_pool']=='TOC')]
+toc = extr_full[(extr_full['C_pool']=='TOC')&(extr_full['%C']==100.)]
 ### Log transform the data:
 toc_all_data = act_full[act_full.C_pool=='TOC']
 no_inf = toc_all_data.drop(toc_all_data[toc_all_data.decay_const_initial==np.inf].index)
@@ -140,9 +142,9 @@ axflat=axes.flatten()
 sns.scatterplot(x = "FD_initial", y = "Biomass_max_ratio", hue = 'DOC_initial_int', style = "Variance", markers = ['o', 'v'], palette= ['goldenrod', 'olive'], facecolor = 'None', data = datatoplot, ax = axflat[0])
 axflat[0].plot(x_model_1,y_model_1_lowdoc, c= "maroon", label = "low $C_{0}$")
 axflat[0].plot(x_model_1,y_model_1_highdoc, c= "darkgreen", label = "high $C_{0}$")
-axflat[0].axhline(y=1.5, c = 'grey', linestyle = 'dashed')
-axflat[0].annotate('50% increase\nin biomass', xytext=(0.1,0.75),  xycoords='data',
-            xy=(1E-10,1.5), textcoords='axes fraction',color='dimgrey',
+axflat[0].axhline(y=1.0, c = 'grey', linestyle = 'dashed')
+axflat[0].annotate('Dying\nsystems', xytext=(0.1,0.75),  xycoords='data',
+            xy=(1E-10,1.0), textcoords='axes fraction',color='dimgrey',
             arrowprops=dict(facecolor='grey', width = 3, edgecolor = 'grey', shrink=0.05),
             horizontalalignment='left', verticalalignment='top',fontsize = 12)
 axflat[0].set_ylabel("$B_{max}/B_{0}$", fontsize = 16, labelpad = 55)
@@ -237,29 +239,77 @@ for a in axe:
     a.set_yscale("log")
 plt.tight_layout()
 plt.savefig(os.path.join(figures_dir, "Fig_S1_imposed_func_div.png"), bbox_inches = 'tight', dpi = 300)
+#%%
+toc_all_data['FD_initial_cut_n'] = pd.cut(np.log10(toc_all_data['FD_initial']), bins=[-13,-7,-5,-1])
+x = toc_all_data['FD_initial_cut_n'].astype(str)
 
 #%%
-fig, axes = plt.subplots(3,1, figsize = (8,14), sharex = True)
-sns.scatterplot(x = "FD_initial", y = "FD_ratio", hue = 'DOC_initial_int', style = "Variance", data = act_full, ax = axes[0])
-axes[0].set_ylabel("Functional diversity:\nPeak/Initial", fontsize = 16)
-sns.scatterplot(x = "FD_initial", y = "Biomass_ratio", hue = 'DOC_initial_int', style = "Variance", data = act_full, ax = axes[1])
-axes[1].set_ylabel("Gain in biomass:\nPeak/Initial", fontsize = 16)
-sns.scatterplot(x = "FD_initial", y = "Decay_constant", hue = 'DOC_initial_int', style = "Variance", data = act_full, ax = axes[2])
-axes[2].set_xscale("log")
-axes[2].set_xlabel("Initial functional diversity: Variance", fontsize = 16)
-axes[2].set_ylabel("Decay constant (1/day)", fontsize = 16)
-for a in axes.flatten():
-    a.tick_params(axis='both', which='major', labelsize=14)
-    a.legend().set_visible(False)
-axes[2].legend(bbox_to_anchor=(0.75,-0.2), fontsize = 14, ncol = 2)
-plt.tight_layout()
-plt.savefig(os.path.join(project_dir, "ecosystem_func_div_all.png"), dpi = 300)
+### Line plot of slowing down decay constant with decreasing carbon
+#plotdata_grp = toc_all_data.groupby(["Seed", "C_pool", "Sim_series", "Variance","DOC_initial_int", "carbon_species", "biomass_species"])
+x_lin = np.linspace(100,10,10)
+row_plots = [2000.0, 10000.]#[0.01, 0.1, 0.5, 1.0, 1.5]#x.unique().tolist()
+col_plots = ['TOC','DOC', 'reduced_C', 'oxidized_C']
+data = extr_full#[extr_full.FD_initial_cut_n==fd_bins[1]]
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True, sharey='row', figsize = (8,4))
+ax = axes.flatten()
+for iidx, i in enumerate(row_plots):
+    for jidx, j in enumerate(col_plots):
+        axindx = iidx*len(col_plots) + jidx
+        subset = data[(data['C_pool']==j)&(data['DOC_initial_int']==i)]#['FD_initial_cut_n'].astype(str)==i)]
+        actual = subset.groupby(["Seed", "Variance", "carbon_species", "biomass_species"])
+        for (key) in actual.groups.keys():
+            y = actual.get_group(key)['decay_ratio'].values
+            if y[-4]==-1.:
+                pass
+            else:    
+                ax[axindx].plot(x_lin, y, c = 'grey', alpha = 0.2)
+        for (key) in actual.groups.keys():
+            y = actual.get_group(key)['decay_ratio'].values
+            if y[-4]==-1.:
+                ax[axindx].plot(x_lin, y, c = 'darkgoldenrod')
+            else:    
+                pass
+        if iidx==1:
+            ax[axindx].set_xlabel("%$C_{0}$")
+        if jidx==0:
+            ax[axindx].set_ylabel(i, fontsize = 14)
+        else:
+            ax[axindx].set_ylabel("")
+fig.supylabel("$C_{0}$", fontsize = 14)
+ax[0].set_title("TOC", fontsize = 14)
+ax[1].set_title("DOC", fontsize = 14)
+ax[2].set_title("reduced C", fontsize = 14)
+ax[3].set_title("oxidized C", fontsize = 14)
+plt.ylim(bottom=-1.)
+plt.xlim((100.,10.))
+for a in ax[:]:
+    a.axhline(y=1.0, c='maroon', linestyle='dashed')
+plt.savefig(os.path.join(figures_dir, "Fig_S3_decay_const_temporal.png"), bbox_inches = 'tight', dpi = 300)
 #%%
-
+#### Microbial diversity, chemical diveristy in scenarios of incomplete carbon decomposition
+group = extr_full[extr_full.C_pool=="TOC"].groupby(["Seed","Variance", "DOC_initial_int","carbon_species", "biomass_species"])
+key_dic = []
+for (key) in group.groups.keys():
+    y = group.get_group(key)['decay_ratio'].values
+    if y[-4]==-1.:
+        key_dic.append(key)
 #%%
-sns.scatterplot(x = "Biomass_ratio", y = "FD_ratio", hue = 'DOC_initial_int', style = "Variance", size = "carbon_species",data = extr_full)
+vmax_dic = []
+kmean_dic = []
+nosc_dic = []
+for k in key_dic:
+    vmax_dic.append(group.get_group(k)['vmax_mean'])
+    kmean_dic.append(group.get_group(k)['k_mean'])
+    nosc_dic.append(group.get_group(k)['NOSC_initial'])
+#%%
+### PLOT TIME SERIES PLOTS OF THESE 7 SCENARIOS
+### LOOK AT CONCENTRATIONS, and Carbon pool
+#%%
+sns.scatterplot(x = "Biomass_max_ratio", y = "fd_ratio_at_max_Biomass", hue = 'DOC_initial_int', style = "Variance", size = "carbon_species",data = toc[toc.biomass_species==4])
 plt.axhline(y=1, c = 'red', label = "Same community")
 plt.axvline(x=1, c = 'black', label = 'Dying community')
+plt.xlim((0.5,5))
+plt.ylim(top = 12)
 plt.yscale("log")
 plt.xlabel("Ratio: Biomass")
 plt.ylabel("Ratio: Functional diversity")
