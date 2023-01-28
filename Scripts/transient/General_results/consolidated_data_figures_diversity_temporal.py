@@ -8,7 +8,7 @@ import seaborn as sns
 
 ## LOAD RESULTS
 project_dir = "C:/Users/swkh9804/Documents/Scripts/HoliSoils/Data"#os.path.join("D:/", "Projects", "HoliSoils","data","transient")
-all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const.csv"))
+all_data = pd.read_csv(os.path.join(project_dir,"simulation_results_temporal_initial_conditions_decay_const_with_paras.csv"))
 print(all_data.shape)
 print(all_data.dtypes)
 seeds= all_data.Seed.unique().tolist()
@@ -19,6 +19,9 @@ docs = all_data.DOC_initial_int.unique().tolist()
 sims = all_data.Sim_series.unique().tolist()
 variances=all_data.Variance.unique().tolist()
 #all_data.replace([np.inf, -np.inf, np.nan], 0, inplace=True)
+all_data['FD_initial_cut_n'] = pd.cut(np.log10(all_data['FD_initial']), bins=[-13,-7,-5,-1])
+x = all_data['FD_initial_cut_n'].astype(str)
+fd_bins=all_data.FD_initial_cut_n.unique().tolist()
 #%%
 ###--------------------------------------------------------
 ### BINNING ACCORDING TO FUNCTIONAL DIVERSITY
@@ -33,7 +36,7 @@ plt.title("Binned functional diversity")
 sns.histplot(x)
 plt.xticks(rotation=45)
 fd_bins=all_data.FD_initial_cut_n.unique().tolist()
-
+all_data['carbonxbiomass_species']=all_data.carbon_species*all_data.biomass_species
 #%%
 ###--------------------------------------------------------
 ### SUBSET DATA TO WORK WITH SMALLER DATASETS TO MAKE SENS
@@ -47,7 +50,7 @@ extr_full = act_full[(act_full['DOC_initial_int']==2000.)|(act_full['DOC_initial
 row_plots = [100.]
 col_plots = ['TOC', 'DOC', 'reduced_C', 'oxidized_C']
 data = extr_full#extr_full[extr_full.FD_initial_cut_n==fd_bins[1]]
-fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True, sharey=True, figsize = (10,4))
+fig, axes = plt.subplots(len(row_plots),len(col_plots),sharex=True, sharey=True, figsize = (16,4))
 ax = axes.flatten()
 for i in list(range(len(col_plots))):
     subset1 = data[data.C_pool==col_plots[i]].reset_index()
@@ -59,9 +62,10 @@ for i in list(range(len(col_plots))):
         ax[axindx].set_xlabel("")
 ax[0].set_ylabel("Decay constant", fontsize = 14)
 fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
-ax[0].set_title("DOC", fontsize = 14)
-ax[1].set_title("reduced C", fontsize = 14)
-ax[2].set_title("oxidized C", fontsize = 14)
+ax[0].set_title("TOC", fontsize = 14)
+ax[1].set_title("DOC", fontsize = 14)
+ax[2].set_title("reduced C", fontsize = 14)
+ax[3].set_title("oxidized C", fontsize = 14)
 plt.xscale("log")
 for a in ax[:]:
     a.axhline(y=0.0, c='maroon', linestyle='dashed')
@@ -89,9 +93,10 @@ for iidx, i in enumerate(row_plots):
         else:
             ax[axindx].set_ylabel("")
 fig.supxlabel("Functional diversity (Variance)", fontsize = 14)
-ax[0].set_title("DOC", fontsize = 14)
-ax[1].set_title("reduced C", fontsize = 14)
-ax[2].set_title("oxidized C", fontsize = 14)
+ax[0].set_title("TOC", fontsize = 14)
+ax[1].set_title("DOC", fontsize = 14)
+ax[2].set_title("reduced C", fontsize = 14)
+ax[3].set_title("oxidized C", fontsize = 14)
 plt.xscale("log")
 plt.yscale("log")
 for a in ax[:]:
@@ -149,7 +154,6 @@ g.map(sns.scatterplot, 'decay_max', 'decay_stop')
 g.set(ylim=(0, 110), xlim=(0,110), xlabel="%C for peak decomposition", ylabel="%C for C decomposition ending")
 g.add_legend()
 #%%
-act_full['carbonxbiomass_species']=act_full.carbon_species*act_full.biomass_species
 sns.scatterplot(x='decay_max', y='decay_stop',data = act_full[act_full.C_pool=='DOC'], style = 'Variance', size = 'carbonxbiomass_species', hue = 'DOC_initial_int', hue_order = [15000.,10000.,5000.,2000.,1000.])
 plt.xlim(0,100)
 plt.ylim(-0,100)
@@ -177,7 +181,7 @@ plt.title("Fully active communities: oxidized C")
 ###--------------------------------------------------------
 ### WHAT KIND OF COMMUNITIES ALLOW FOR PREMATURE STOPPING OF C decomposition?
 ###--------------------------------------------------------
-early_stop = act_full[(act_full['decay_ratio']==-1.)&(act_full['%C']==50.)]
+early_stop = act_full[(act_full['decay_ratio']==-1.)&(act_full['%C']>20.)]
 es_doc = early_stop[early_stop.C_pool=='DOC']
 esd_cpoor = es_doc[es_doc.DOC_initial_int<=2000.]
 esd_crich = es_doc[es_doc.DOC_initial_int>2000.]
@@ -187,6 +191,14 @@ print(esd_crich.Variance.unique())
 print(esd_cpoor.FD_initial_cut_n.unique())
 print(esd_crich.FD_initial_cut_n.unique())
 # Carbon poor conditions provide for storage as opposed to carbonrich conditions
+#%%
+#Is remaining carbon similar across all simulations, irrespective of %?
+act_full['C_end'] = act_full.decay_stop*act_full.DOC_initial_int/100
+print(act_full.C_end.describe())
+#mean carbon remainign is ~730 with std of of 828. Mode is 500.
+#top quartile is 1000
+#this points to the role of parametrization of kmean.
+#this is consistent regardless of %carbon remaining
 #%%
 ###--------------------------------------------------------
 ### FACTORIAL ANALYSIS:
@@ -297,6 +309,10 @@ act_off = all_data[all_data.Sim_series!="b_1_all_"]
 act_off['cab']=act_off.carbon_species*act_off.biomass_species*act_off.activity/100
 extr_off = act_off[(act_off['DOC_initial_int']==2000.)|(act_off['DOC_initial_int']==10000.)]
 #%%
+#Is remaining carbon similar across all simulations, irrespective of %?
+act_off['C_end'] = act_off.decay_stop*act_off.DOC_initial_int/100
+print(act_off.C_end.describe())
+#%%
 sns.scatterplot(x='decay_max', y='decay_stop',data = act_off[act_off.C_pool=='DOC'], style = 'Variance', size = 'cab', hue = 'DOC_initial_int', hue_order = [15000.,10000.,5000.,2000.,1000.])
 plt.xlim(0,100)
 plt.ylim(0,100)
@@ -356,14 +372,100 @@ g = sns.FacetGrid(data=extr_full[extr_full.C_pool=='TOC'], col = 'FD_initial_cut
 g.map(sns.scatterplot, 'decay_max', 'decay_stop')
 #g.add_legend()
 #%%
-extr_full['carbonxbiomass'] = extr_full.carbon_species*extr_full.biomass_species
+extr_full['carbonxbiomass_species'] = extr_full.carbon_species*extr_full.biomass_species
+extr_full['C_end'] = (extr_full['decay_stop']*extr_full.DOC_initial_int/100)/extr_full.k_mean
+extr_full['C_max'] = (extr_full['decay_max']*extr_full.DOC_initial_int/100)/extr_full.k_mean
+act_full['carbonxbiomass'] = act_full.carbon_species*act_full.biomass_species
+act_full['C_end'] = (act_full['decay_stop']*act_full.DOC_initial_int/100)/act_full.k_mean
+act_full['C_max'] = (act_full['decay_max']*act_full.DOC_initial_int/100)/act_full.k_mean
+act_full['C_avail'] = (act_full.DOC_initial_int/act_full.k_mean)
+
 #%%
-cpooltoplot = 'reduced_C'
-g = sns.FacetGrid(data=extr_full[extr_full.C_pool==cpooltoplot], col = 'FD_initial_cut_n', row = 'DOC_initial_int', hue = 'carbonxbiomass', margin_titles=True, palette= 'flare')
-g.map(sns.scatterplot, 'decay_max', 'decay_stop')
-g.set(xlim=(0,110), ylim=(0,110),xlabel="%C for peak decomposition", ylabel="%C persists")
+cpooltoplot = 'DOC'
+extr_full['C_end'] = (extr_full['decay_stop']*extr_full.DOC_initial_int/100)#/extr_full.k_mean
+extr_full['C_max'] = ((extr_full['decay_max']*extr_full.DOC_initial_int/100))#/extr_full.k_mean)*(extr_full.DOC_initial_int/extr_full.k_mean)
+extr_full['C_avail'] = (extr_full.DOC_initial_int/extr_full.k_mean)
+#%%
+g = sns.FacetGrid(data=extr_full[extr_full.C_pool==cpooltoplot], col = 'FD_initial_cut_n', hue = 'k_mean', margin_titles=True, palette= 'flare', sharex=True, sharey=True)
+#g.map(sns.scatterplot, 'decay_max', 'decay_stop')
+#row = 'DOC_initial_int', 
+g.map(sns.scatterplot, 'carbonxbiomass_species', 'C_end')
+#g.set(xlim=(0,110), ylim=(0,110),xlabel="%C for peak decomposition", ylabel="%C persists")
 g.set_titles(col_template="logf range= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+g.set(yscale="log", xscale="log")
 g.fig.subplots_adjust(top=0.90)
 g.fig.suptitle(cpooltoplot)
 #%%
-sns.jointplot(data=act_off[act_off.C_pool==cpooltoplot], x = 'decay_max', y = 'decay_stop', hue = 'cab')
+g = sns.FacetGrid(data=extr_full[extr_full.C_pool==cpooltoplot], col = 'FD_initial_cut_n', row = 'DOC_initial_int', hue ="carbonxbiomass_species", margin_titles=True, palette= 'flare', sharex=True, sharey=True) 
+g.map(sns.scatterplot, 'k_mean', 'C_end', edgecolor = None, alpha = 0.7)
+g.set_titles(col_template="logf range= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+#g.set(yscale="log")#, xscale="log")
+g.add_legend()
+g.fig.subplots_adjust(top=0.90)
+g.fig.suptitle(cpooltoplot)
+#%%
+low_bio= early_stop_2#[extr_full.biomass_species<10]
+g = sns.FacetGrid(data=low_bio[low_bio.C_pool==cpooltoplot], col = 'FD_initial_cut_n', row = "DOC_initial_int", hue = 'carbonxbiomass_species', margin_titles=True, palette= 'flare', sharex=True, sharey=True) 
+g.map(sns.scatterplot, 'vmax_mean', 'C_end', edgecolor = None, alpha = 0.7)
+g.set_titles(col_template="logf range= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+#g.set(yscale="log", xscale="log")
+g.fig.subplots_adjust(top=0.90)
+g.fig.suptitle(cpooltoplot)
+#%%
+low_bio= early_stop_2#extr_full#[extr_full.biomass_species<10]
+g = sns.FacetGrid(data=low_bio[low_bio.C_pool==cpooltoplot], col = 'Variance', hue = "biomass_species", margin_titles=True, palette= 'flare', sharex=True, sharey=True) 
+g.map(sns.scatterplot, 'carbonxbiomass_species', 'vmax_mean', edgecolor = None, alpha = 0.7)
+g.set_titles(col_template="Variance= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+g.set(yscale="log", xlabel = "#carbon x\n#biomass", ylabel = "Biomass weighted vmax")
+g.add_legend()
+#%%
+g = sns.FacetGrid(data=low_bio[low_bio.C_pool==cpooltoplot], col = 'FD_initial_cut_n', hue = "biomass_species", margin_titles=True, palette= 'flare', sharex=True, sharey=True) 
+g.map(sns.scatterplot, 'carbonxbiomass_species', 'vmax_mean', edgecolor = None, alpha = 0.7)
+g.set_titles(col_template="logf range= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+g.set(yscale="log", xlabel = "#carbon x\n#biomass", ylabel = "Biomass weighted vmax")
+g.add_legend()
+#%%
+#%%
+g = sns.FacetGrid(data=low_bio[low_bio.C_pool==cpooltoplot], col = 'FD_initial_cut_n', hue = "carbonxbiomass_species", margin_titles=True, palette= 'flare', sharex=True, sharey=True) 
+g.map(sns.scatterplot, 'k_mean', 'vmax_mean', edgecolor = None, alpha = 0.7)
+g.set_titles(col_template="logf range= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+g.set(yscale="log", xlabel = "Biomas weighted k", ylabel = "Biomass weighted vmax")
+g.add_legend()
+#%%
+doc_stop = act_full[act_full.C_pool=='DOC']
+early_stop_2 = doc_stop[(doc_stop['decay_stop']>10)&(doc_stop['C_end']>doc_stop['k_mean'])]
+print(early_stop_2.Variance.unique())
+#%%
+g = sns.FacetGrid(data=early_stop_2, col = 'FD_initial_cut_n', hue = "DOC_initial_int", margin_titles=True, palette= 'flare', sharex=True, sharey=True) 
+g.map(sns.scatterplot, 'k_mean', 'vmax_mean', edgecolor = None, alpha = 0.7)
+g.set_titles(col_template="logf range= {col_name}", row_template="Initial C= {row_name}")#-13<logf<-7","-7<logf<-5","-5<logf<-1")#,"Initial C = 2000.","Initial C = 10000.")
+g.set(xlabel = "Biomas weighted k", ylabel = "Biomass weighted vmax")
+g.add_legend()
+#%%
+early_stop_2['x_var'] = early_stop_2.vmax_mean/early_stop_2.k_mean
+sns.scatterplot(data = early_stop_2, x = "x_var", y = "decay_stop", hue = "DOC_initial_int")#, size = "k_mean")
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+plt.tight_layout()
+#%%
+act_full['x_var'] = act_full.vmax_mean/act_full.k_mean
+sns.scatterplot(data = act_full[act_full.C_pool=='DOC'], x = "x_var", y = "C_end", hue = "DOC_initial_int")#, size = "k_mean")
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+plt.xscale("log")
+plt.tight_layout()
+#%%
+#%%
+act_full['x_var'] = act_full.vmax_mean/act_full.k_mean
+sns.scatterplot(data = act_full[act_full.C_pool=='DOC'], x = "x_var", y = "decay_max", hue = "DOC_initial_int")#, size = "k_mean")
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+plt.xscale("log")
+plt.tight_layout()
+#%%
+late_max = doc_stop[(doc_stop['decay_max']<70)]
+late_max['x_var'] = late_max.DOC_initial_int/(late_max.carbon_species*late_max.biomass_species)#late_max.vmax_mean/late_max.k_mean
+#%%
+sns.scatterplot(data = late_max, x = "x_var", y = "C_max", hue = "DOC_initial_int")#, size = "k_mean")
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+plt.xscale("log")
+plt.tight_layout()
+#%%
+sns.jointplot(data=act_full[act_full.C_pool=='DOC'], x = 'C_max', y = 'C_end', hue = 'DOC_initial_int')#, hue = 'cab')
