@@ -304,6 +304,88 @@ for k in key_dic:
 #%%
 ### PLOT TIME SERIES PLOTS OF THESE 7 SCENARIOS
 ### LOOK AT CONCENTRATIONS, and Carbon pool
+import h5py
+
+## LOAD RESULTS
+data_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
+filestring = "competition_adaptation"
+ip = 0
+
+sc1 = key_dic[0]
+Seed_select = sc1[0]
+var_select = sc1[1]
+doc_low = sc1[2]
+carbon_n = sc1[3]
+bio_low= sc1[4]
+
+simulation_subfolder = filestring + '_carbon_' + str(carbon_n) + '_'+str(Seed_select) + '_ip_0'
+similar_dir = os.path.join(data_dir, 'gen_spec_lognorm_0_'+str(var_select)[-1], "simulations", simulation_subfolder)
+#similar_dir = os.path.join(data_dir, 'gen_spec_lognorm', "simulations", simulation_subfolder)
+#similar_dir = os.path.join(data_dir, 'gen_spec_lognorm_1_5x', "simulations", simulation_subfolder)
+similar_hr = h5py.File(os.path.join(similar_dir,"simulations.h5"), mode = 'r')
+
+bl_docl = "b_1_all_/bio_n_" + str(bio_low) + "/dom_initial_" + str(doc_low) + "/seed_" + str(Seed_select)
+sim_bl_docl = similar_hr[bl_docl+'/solution']
+paras = similar_hr[bl_docl+'/parameters']
+nosc = paras['oxidation_state'][:]
+vmax_mean = np.mean(np.asarray(paras['max_rate'])*np.asarray(paras['exo_enzyme_rate'])*np.asarray(paras['carbon_uptake']), axis = 0)
+x = sim_bl_docl
+C = np.asarray(x['dom'])
+B = np.asarray(x['biomass'])
+C_sum = (1- (np.sum(np.asarray(x['dom']), axis = 1)/doc_low))*100
+B_sum = np.sum(np.asarray(x['biomass']), axis = 1)
+
+C_pc = (1- (np.asarray(x['dom'])/np.asarray(x['dom'])[0,:]))*100
+
+nosc_argidx = np.argsort(nosc)
+vm_argidx = np.argsort(vmax_mean)
+
+time_span = np.linspace(0,36505, int(36500/5))
+xticks_plot = time_span[::730].astype(int)
+xticks_label = np.linspace(0,100,100)[::10].astype(int)
+cmap_bio = plt.cm.get_cmap('plasma_r')
+#cmap_bio = plt.cm.viridis_r#((nosc-nosc.min())/(nosc.max()-nosc.min()))
+#color_idx = np.arange(0, 100, step = 10, dtype = int)
+fig,axes = plt.subplots(2,1, figsize = (5,6), sharex = True)
+ax = axes.flatten()
+
+for cn in list(range(carbon_n)):
+    ax[0].plot(time_span, C_pc[:, cn], c = cmap_bio(10+(50*cn)), label = nosc[nosc_argidx][cn])
+ax[0].legend(bbox_to_anchor=(1,1.))
+ax[0].set_ylabel ("%$C_{0}$")
+for bn in list(range(bio_low)):
+    ax[1].plot(time_span, B[:,bn],c = cmap_bio(10+(50*bn)), label = vmax_mean[vm_argidx][bn])
+ax[1].legend(bbox_to_anchor = (1.65,1.))
+ax[1].set_ylabel ("B [N $L_{-3}$]")
+ax[1].set_xlabel("Time (days)")
+plt.suptitle(sc1)
+
+#%%
+for x,doc_lev,v in zip([sim_bl_docl],[doc_low], [0,0,1,1]):
+    bn=bio_low
+    C_sum = (1- (np.sum(np.asarray(x['dom']), axis = 1)/doc_lev))*100
+    B_sum = np.sum(np.asarray(x['biomass']), axis = 1)
+    ax[0].plot(time_span[::500], B_sum[::500], color = cmap_bio(doc_lev/5000), linestyle = var_styles[v], marker = bio_styles[0])
+    ax[1].plot(time_span[::500], C_sum[::500], color = cmap_bio(doc_lev/5000), linestyle = var_styles[v],  marker = bio_styles[0])
+    
+for x,doc_lev,v in zip([sim_bh_docl,sim_bh_doch,dissim_bh_docl,dissim_bh_doch],[doc_low,doc_high, doc_low, doc_high], [0,0,1,1]):
+    bn=bio_high
+    C_sum = (1- (np.sum(np.asarray(x['dom']), axis = 1)/doc_lev))*100
+    B_sum = np.sum(np.asarray(x['biomass']), axis = 1)
+    ax[0].plot(time_span[::500], B_sum[::500], color = cmap_bio(doc_lev/5000), linestyle = var_styles[v], marker = bio_styles[1])
+    ax[1].plot(time_span[::500], C_sum[::500], color = cmap_bio(doc_lev/5000), linestyle = var_styles[v],  marker = bio_styles[1])
+
+ax[0].set_title('A', fontsize = 16, loc='left')
+ax[1].set_title('B', fontsize = 16, loc='left')
+
+ax[0].set_ylabel ("Biomass [N $L^{-3}$]")
+ax[1].set_ylabel ("Carbon consumed (%)")
+ax[1].set_xlabel ("Time [T]")
+ax[0].set_ylim(bottom = 0)
+ax[1].set_ylim(0,110)
+ax[1].set_xticks(xticks_plot)
+ax[1].set_xticklabels(xticks_label)
+ax[1].set_xlim(left = 0)
 #%%
 sns.scatterplot(x = "Biomass_max_ratio", y = "fd_ratio_at_max_Biomass", hue = 'DOC_initial_int', style = "Variance", size = "carbon_species",data = toc[toc.biomass_species==4])
 plt.axhline(y=1, c = 'red', label = "Same community")
