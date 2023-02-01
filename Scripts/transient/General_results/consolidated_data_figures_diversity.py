@@ -311,7 +311,7 @@ data_dir = os.path.join("D:/", "Projects", "HoliSoils","data","transient")
 filestring = "competition_adaptation"
 ip = 0
 
-sc1 = key_dic[0]
+sc1 = key_dic[4]
 Seed_select = sc1[0]
 var_select = sc1[1]
 doc_low = sc1[2]
@@ -328,7 +328,7 @@ bl_docl = "b_1_all_/bio_n_" + str(bio_low) + "/dom_initial_" + str(doc_low) + "/
 sim_bl_docl = similar_hr[bl_docl+'/solution']
 paras = similar_hr[bl_docl+'/parameters']
 nosc = paras['oxidation_state'][:]
-vmax_mean = np.mean(np.asarray(paras['max_rate'])*np.asarray(paras['exo_enzyme_rate'])*np.asarray(paras['carbon_uptake']), axis = 0)
+vprod = np.sum(np.asarray(paras['max_rate'])*np.asarray(paras['carbon_uptake'])*np.asarray(paras['exo_enzyme_rate']), axis=0)
 x = sim_bl_docl
 C = np.asarray(x['dom'])
 B = np.asarray(x['biomass'])
@@ -338,7 +338,7 @@ B_sum = np.sum(np.asarray(x['biomass']), axis = 1)
 C_pc = (1- (np.asarray(x['dom'])/np.asarray(x['dom'])[0,:]))*100
 
 nosc_argidx = np.argsort(nosc)
-vm_argidx = np.argsort(vmax_mean)
+vm_argidx = np.argsort(vprod)
 
 time_span = np.linspace(0,36505, int(36500/5))
 xticks_plot = time_span[::730].astype(int)
@@ -350,16 +350,20 @@ fig,axes = plt.subplots(2,1, figsize = (5,6), sharex = True)
 ax = axes.flatten()
 
 for cn in list(range(carbon_n)):
-    ax[0].plot(time_span, C_pc[:, cn], c = cmap_bio(10+(50*cn)), label = nosc[nosc_argidx][cn])
+    print(cn, nosc_argidx[cn])
+    ax[0].plot(time_span, C_pc[:, nosc_argidx[cn]], c = cmap_bio(10+(50*cn)), label = nosc[nosc_argidx[cn]])
 ax[0].legend(bbox_to_anchor=(1,1.))
 ax[0].set_ylabel ("%$C_{0}$")
 for bn in list(range(bio_low)):
-    ax[1].plot(time_span, B[:,bn],c = cmap_bio(10+(50*bn)), label = vmax_mean[vm_argidx][bn])
+    ax[1].plot(time_span, B[:,vm_argidx[bn]],c = cmap_bio(10+(50*bn)), label = vprod[vm_argidx[bn]])
 ax[1].legend(bbox_to_anchor = (1.65,1.))
 ax[1].set_ylabel ("B [N $L_{-3}$]")
 ax[1].set_xlabel("Time (days)")
 plt.suptitle(sc1)
-
+#%%
+print(np.shape(np.asarray(paras['max_rate'])))
+#%%
+print(paras['max_rate'][:])#[[2,3,4],:])#*np.asarray(paras['exo_enzyme_rate'])*np.asarray(paras['carbon_uptake']
 #%%
 for x,doc_lev,v in zip([sim_bl_docl],[doc_low], [0,0,1,1]):
     bn=bio_low
