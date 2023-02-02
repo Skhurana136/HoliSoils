@@ -127,7 +127,7 @@ coefs_model_2.set_index('Features', inplace=True)
 #%%
 ### Figure 3: Scatter plot sof ecosystem indicators against function diversity
 datatoplot = toc[(toc['Variance']==0.01)|(toc['Variance']==1.0)]
-x_model_1 = np.linspace(1E-10, 1E-3, num = 80)#np.array(datatoplot.FD_initial.unique().sort())
+x_model_1 = np.linspace(1E-10, 1E-3, num = 100000)#np.array(datatoplot.FD_initial.unique().sort())
 y_model_1_lowdoc = 10**(model_1_1_r.params[0])*(x_model_1**model_1_1_r.params[1])*(2000.**model_1_1_r.params[2])
 y_model_1_highdoc = 10**(model_1_1_r.params[0])*(x_model_1**model_1_1_r.params[1])*(10000.**model_1_1_r.params[2])
 y_model_2_lowdoc = 10**(model_1_2_r.params[0])*(x_model_1**model_1_2_r.params[1])*(2000.**model_1_2_r.params[2])
